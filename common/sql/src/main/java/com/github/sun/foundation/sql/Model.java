@@ -29,6 +29,8 @@ public interface Model {
 
   String tableName();
 
+  List<Property> properties();
+
   List<Property> primaryProperties();
 
   List<Property> transientProperties();
@@ -82,6 +84,7 @@ public interface Model {
     private final Class<?> entityClass;
 
     private String tableName;
+    private List<Property> properties;
     private List<Property> primaryProperties;
     private List<Property> transientProperties;
     private List<Property> persistenceProperties;
@@ -134,6 +137,18 @@ public interface Model {
         }
       }
       return tableName;
+    }
+
+    @Override
+    public List<Property> properties() {
+      if (properties == null) {
+        properties = new ArrayList<>();
+        properties.addAll(primaryProperties());
+        properties.addAll(persistenceProperties());
+        properties.addAll(transientProperties());
+        properties = Collections.unmodifiableList(properties);
+      }
+      return properties;
     }
 
     @Override
