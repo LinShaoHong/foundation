@@ -1,0 +1,5 @@
+dependencies {
+  compile "junit:junit:$vers.junit"
+}
+
+apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")

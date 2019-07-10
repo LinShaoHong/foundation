@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: Zuul-Server
+server:
+  port: 8082
+
+eureka:
+  instance:
+    preferIpAddress: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://127.0.0.1:8761/eureka/
+zuul:
+  prefix: /v1/api
+  routes:
+    foo:
+      path: /foo/**
+      serviceId: Foo-Server
+    bar:
+      path: /bar/**
+      serviceId: Bar-Server

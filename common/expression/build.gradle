@@ -1,0 +1,14 @@
+apply plugin: 'antlr'
+
+generateGrammarSource {
+  outputDirectory = file("${outputDirectory}/com/github/sun/foundation/expression/parser")
+  maxHeapSize = "256m"
+  arguments += ["-no-listener", "-long-messages"]
+}
+dependencies {
+  compile project(":$rootName-boot")
+  antlr "org.antlr:antlr4:$vers.antlr4"
+}
+
+apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")
+apply from: rootProject.file("buildscript/gradle/sub_immutables.gradle")

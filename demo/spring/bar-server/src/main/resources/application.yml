@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: Bar-Server
+server:
+  port: 13881
+
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 1
+    leaseExpirationDurationInSeconds: 2
+  client:
+    serviceUrl:
+      defaultZone: http://127.0.0.1:8761/eureka/
