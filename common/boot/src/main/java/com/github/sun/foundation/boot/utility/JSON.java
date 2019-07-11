@@ -13,10 +13,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-/**
- * @Author LinSH
- * @Date: 12:44 PM 2019-07-10
- */
 public class JSON {
   private static final ObjectMapper mapper = new ObjectMapper();
 
