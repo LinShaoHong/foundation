@@ -1,6 +1,6 @@
 dependencies {
-  compile project(":$rootName-rest")
-  compile "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client"
+  compile project(":$rootName-boot")
+  compile "org.springframework.boot:spring-boot-starter-jersey:$vers.springboot"
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")

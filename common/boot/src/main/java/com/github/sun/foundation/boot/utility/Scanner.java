@@ -1,4 +1,4 @@
-package com.github.sun.foundation.boot;
+package com.github.sun.foundation.boot.utility;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
@@ -6,7 +6,7 @@ import io.github.classgraph.ScanResult;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -36,12 +36,18 @@ public interface Scanner {
     }
   }
 
+  Map<Set<String>, Scanner> cache = new HashMap<>();
+
   static Scanner create(String... basePackages) {
-    ScanResult scanResult = new ClassGraph()
-      .enableAllInfo()
-      .whitelistPackages(basePackages)
-      .scan();
-    return new ScannerImpl(scanResult);
+    Set<String> key = Arrays.stream(basePackages)
+      .collect(Collectors.toSet());
+    return cache.computeIfAbsent(key, set -> {
+      ScanResult scanResult = new ClassGraph()
+        .enableAllInfo()
+        .whitelistPackages(basePackages)
+        .scan();
+      return new ScannerImpl(scanResult);
+    });
   }
 
   class ScannerImpl implements Scanner {

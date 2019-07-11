@@ -1,8 +1,7 @@
-package com.github.sun.foundation.spring.foo;
+package com.github.sun.foundation.spring.rest;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.ComponentScan;
 
 import javax.ws.rs.GET;
@@ -10,20 +9,19 @@ import javax.ws.rs.Path;
 
 /**
  * @Author LinSH
- * @Date: 8:19 PM 2019-07-06
+ * @Date: 12:17 PM 2019-07-11
  */
 @Path("/v1/api")
-@EnableEurekaClient
 @SpringBootApplication
 @ComponentScan({"com.github.sun"})
-public class FooServer {
+public class RestServer {
   public static void main(String[] args) {
-    new SpringApplicationBuilder(FooServer.class).run(args);
+    new SpringApplicationBuilder(RestServer.class).run(args);
   }
 
   @GET
-  @Path("/foo")
+  @Path("/hello")
   public String foo() {
-    return "Hello, bar";
+    return "Hello, World";
   }
 }

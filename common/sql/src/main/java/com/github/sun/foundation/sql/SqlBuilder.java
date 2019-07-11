@@ -1,7 +1,7 @@
 package com.github.sun.foundation.sql;
 
-import com.github.sun.foundation.boot.SqlFormatter;
-import com.github.sun.foundation.boot.Tuple;
+import com.github.sun.foundation.boot.utility.SqlFormatter;
+import com.github.sun.foundation.boot.utility.Tuple;
 import com.github.sun.foundation.expression.Expression;
 import com.github.sun.foundation.expression.ExpressionParser;
 import org.immutables.value.Value;

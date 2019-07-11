@@ -1,4 +1,4 @@
-package com.github.sun.foundation.boot;
+package com.github.sun.foundation.boot.utility;
 
 import java.lang.annotation.Annotation;
 

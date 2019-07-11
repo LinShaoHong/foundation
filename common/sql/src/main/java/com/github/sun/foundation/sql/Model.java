@@ -1,6 +1,6 @@
 package com.github.sun.foundation.sql;
 
-import com.github.sun.foundation.boot.Strings;
+import com.github.sun.foundation.boot.utility.Strings;
 
 import javax.persistence.Id;
 import javax.persistence.Table;

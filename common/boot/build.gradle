@@ -1,7 +1,9 @@
 dependencies {
   compile project(":$rootName-test")
-  compile "com.fasterxml.jackson.core:jackson-databind:$vers.jackson"
   compile "io.github.classgraph:classgraph:$vers.classgraph"
+  compile "com.fasterxml.jackson.core:jackson-databind:$vers.jackson"
+  compile "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$vers.jackson"
+  compile "com.fasterxml.jackson.module:jackson-module-paranamer:$vers.jackson"
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")

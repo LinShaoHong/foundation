@@ -1,6 +1,6 @@
 package com.github.sun.foundation.expression;
 
-import com.github.sun.foundation.boot.Tuple;
+import com.github.sun.foundation.boot.utility.Tuple;
 import org.immutables.value.Value;
 
 import java.util.ArrayList;

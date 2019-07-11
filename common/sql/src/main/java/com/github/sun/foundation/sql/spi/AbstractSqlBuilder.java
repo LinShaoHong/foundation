@@ -1,7 +1,7 @@
 package com.github.sun.foundation.sql.spi;
 
 
-import com.github.sun.foundation.boot.Tuple;
+import com.github.sun.foundation.boot.utility.Tuple;
 import com.github.sun.foundation.expression.Expression;
 import com.github.sun.foundation.sql.JoinMode;
 import com.github.sun.foundation.sql.Model;
