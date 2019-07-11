@@ -21,7 +21,7 @@ import java.security.SecureRandom;
 public class JerseyClient {
   private static Client client;
 
-  public Client build() {
+  public static Client build() {
     if (client == null) {
       synchronized (JerseyClient.class) {
         if (client == null) {
