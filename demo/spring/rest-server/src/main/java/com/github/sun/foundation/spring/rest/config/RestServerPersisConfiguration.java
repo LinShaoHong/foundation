@@ -19,13 +19,13 @@ public class RestServerPersisConfiguration extends PersistenceConfiguration {
   private static final String ID = "restServer";
 
   @Override
-  protected String basePackage() {
-    return "com.github.sun.foundation.spring.rest.mapper";
+  protected String id() {
+    return ID;
   }
 
   @Override
-  protected String datasourcePrefix() {
-    return "spring.datasource.restServer";
+  protected String basePackage() {
+    return "com.github.sun.foundation.spring.rest.mapper";
   }
 
   @Primary

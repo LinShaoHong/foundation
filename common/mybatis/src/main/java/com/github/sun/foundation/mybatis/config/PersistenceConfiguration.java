@@ -20,9 +20,9 @@ public abstract class PersistenceConfiguration {
   protected static final String SQL_SESSION_FACTORY_NAME = "SqlSessionFactoryBean";
   protected static final String SCANNER_NAME = "Scanner";
 
-  protected abstract String basePackage();
+  protected abstract String id();
 
-  protected abstract String datasourcePrefix();
+  protected abstract String basePackage();
 
   protected SqlSessionFactoryBean sqlSessionFactoryBean(DataSource dataSource) throws Exception {
     SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
@@ -85,7 +85,7 @@ public abstract class PersistenceConfiguration {
   }
 
   private DruidSettings loadSetting(Environment env) {
-    String prefix = datasourcePrefix();
+    String prefix = "spring.datasource." + id();
     Function<String, String> func = field -> prefix + "." + field;
     return new DruidSettings(
       env.getProperty(func.apply("url")),
