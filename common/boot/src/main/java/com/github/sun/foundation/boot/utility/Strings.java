@@ -10,12 +10,12 @@ import java.util.regex.Pattern;
  * @Date: 10:43 AM 2019-03-01
  */
 public class Strings {
-  public static String camelCaseToUnderScore(String name) {
+  public static String camelCaseToUnderScore(String name, boolean toLower) {
     StringBuilder sb = new StringBuilder();
     char[] arr = name.toCharArray();
     int i = 1;
     char prev, curr, next;
-    sb.append(Character.toLowerCase(arr[i - 1]));
+    sb.append(toLower ? Character.toLowerCase(arr[i - 1]) : Character.toUpperCase(arr[i - 1]));
     while (i < arr.length - 1) {
       curr = arr[i];
       prev = arr[i - 1];

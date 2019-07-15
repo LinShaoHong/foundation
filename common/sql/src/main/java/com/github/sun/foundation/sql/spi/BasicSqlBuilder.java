@@ -1,16 +1,18 @@
 package com.github.sun.foundation.sql.spi;
 
-import com.github.sun.foundation.boot.utility.*;
+import com.github.sun.foundation.boot.utility.Iterators;
+import com.github.sun.foundation.boot.utility.Strings;
+import com.github.sun.foundation.boot.utility.Tuple;
 import com.github.sun.foundation.expression.Expression;
 import com.github.sun.foundation.expression.Expression.*;
 import com.github.sun.foundation.sql.Model;
 
 import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
+
+import static com.github.sun.foundation.sql.Model.resultType;
 
 /**
  * @Author LinSH
@@ -160,29 +162,6 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
     if (count) {
       sb.append(")");
     }
-  }
-
-  private Class<?> resultType(Type type) {
-    if (type instanceof ParameterizedType) {
-      for (Class<?> baseClass : Arrays.asList(List.class, Set.class)) {
-        List<Type> types = TypeInfo.getTypeParameters(type, baseClass);
-        if (types != null) {
-          Type t = types.get(0);
-          if (t instanceof ParameterizedType) {
-            return resultType(((ParameterizedType) t).getRawType());
-          }
-          return resultType(t);
-        }
-      }
-    } else if (type instanceof Class) {
-      Class<?> c = (Class<?>) type;
-      if (c.isArray()) { // array
-        return c.getComponentType();
-      }
-      return c;
-    }
-    ResolvedType resolvedType = ResolvedType.resolve(type);
-    throw new IllegalArgumentException("unknown type: " + resolvedType.simpleName());
   }
 
   private Model.Property getSelectAliasPrefixProp(String ref) {

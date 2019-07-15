@@ -1,5 +1,10 @@
 spring:
   application:
     name: Rest-Server
+  datasource:
+    restServer:
+      url: "jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF8&useSSL=false&rewriteBatchedStatements=true&autoReconnect=true&failOverReadOnly=false"
+      username: "root"
+      password: "root"
 server:
   port: 13883

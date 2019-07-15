@@ -1,13 +1,18 @@
 package com.github.sun.foundation.sql;
 
+import com.github.sun.foundation.boot.utility.Cache;
 import com.github.sun.foundation.boot.utility.Strings;
+import com.github.sun.foundation.boot.utility.TypeInfo;
 
+import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Time;
@@ -29,6 +34,10 @@ public interface Model {
 
   String tableName();
 
+  default boolean hasProperty() {
+    return !properties().isEmpty();
+  }
+
   List<Property> properties();
 
   List<Property> primaryProperties();
@@ -38,7 +47,17 @@ public interface Model {
   List<Property> persistenceProperties();
 
   default String column(String field) {
-    return Strings.camelCaseToUnderScore(field);
+    Property property = persistenceProperties().stream()
+      .filter(p -> p.name().equals(field))
+      .findFirst()
+      .orElse(null);
+    String column = property == null ? null : property.column();
+    if (column == null) {
+      NamingStrategy a = rawClass() == null ? null : rawClass().getAnnotation(NamingStrategy.class);
+      boolean camelCaseToUnderscore = a != null && a.value().startsWith("camelCaseTo");
+      column = camelCaseToUnderscore ? Strings.camelCaseToUnderScore(field, a.value().contains("Lower")) : field;
+    }
+    return column;
   }
 
   default Property findProperty(String name) {
@@ -59,7 +78,11 @@ public interface Model {
   interface Property {
     String name();
 
+    Model model();
+
     Field field();
+
+    String column();
 
     boolean isJsonPath();
 
@@ -74,10 +97,14 @@ public interface Model {
     Class<?> typeHandler();
 
     boolean hasAnnotation(Class<? extends Annotation> annotationClass);
+
+    Object getValue(Object obj);
   }
 
+  Cache<Class<?>, Model> cache = new Cache<>();
+
   static Model from(Class<?> entityClass) {
-    return new ModelImpl(entityClass);
+    return cache.get(entityClass, () -> new ModelImpl(entityClass));
   }
 
   class ModelImpl implements Model {
@@ -89,7 +116,7 @@ public interface Model {
     private List<Property> transientProperties;
     private List<Property> persistenceProperties;
 
-    public ModelImpl(Class<?> entityClass) {
+    protected ModelImpl(Class<?> entityClass) {
       this.entityClass = entityClass;
     }
 
@@ -179,18 +206,32 @@ public interface Model {
   }
 
   class PropertyImpl implements Property {
+    private final Field field;
+
     private Class<?> typeHandler;
     private String selectAliasPrefix;
     private boolean isJsonPath;
-    private final Field field;
+    private Model model;
+    private String column;
 
-    public PropertyImpl(Field field) {
+    protected PropertyImpl(Field field) {
       this.field = field;
     }
 
     @Override
     public Field field() {
       return field;
+    }
+
+    @Override
+    public String column() {
+      if (column == null && field != null) {
+        Column c = field().getAnnotation(Column.class);
+        if (c != null) {
+          column = c.name();
+        }
+      }
+      return column;
     }
 
     @Override
@@ -206,6 +247,17 @@ public interface Model {
     @Override
     public String name() {
       return field.getName();
+    }
+
+    @Override
+    public Model model() {
+      if (field != null && model == null) {
+        Class<?> actualType = resultType(field.getGenericType());
+        if (actualType != null) {
+          model = from(actualType);
+        }
+      }
+      return model;
     }
 
     @Override
@@ -225,6 +277,26 @@ public interface Model {
     }
 
     @Override
+    public Object getValue(Object obj) {
+      if (field != null) {
+        boolean accessible = field.isAccessible();
+        try {
+          if (!accessible) {
+            field.setAccessible(true);
+          }
+          return field.get(obj);
+        } catch (IllegalAccessException ex) {
+          throw new RuntimeException(ex);
+        } finally {
+          if (!accessible) {
+            field.setAccessible(false);
+          }
+        }
+      }
+      return null;
+    }
+
+    @Override
     public String selectAliasPrefix() {
       if (field != null && selectAliasPrefix == null) {
         SelectAliasPrefix a = field.getAnnotation(SelectAliasPrefix.class);
@@ -233,4 +305,32 @@ public interface Model {
       return selectAliasPrefix;
     }
   }
+
+  static Class<?> resultType(Type type) {
+    if (type instanceof ParameterizedType) {
+      Class<?> rawType = (Class<?>) ((ParameterizedType) type).getRawType();
+      if (rawType.isAssignableFrom(Map.class)) {
+        return Map.class;
+      }
+      for (Class<?> baseClass : baseTypes) {
+        List<Type> types = TypeInfo.getTypeParameters(type, baseClass);
+        if (types != null) {
+          Type t = types.get(0);
+          if (t instanceof ParameterizedType) {
+            return resultType(((ParameterizedType) t).getRawType());
+          }
+          return resultType(t);
+        }
+      }
+    } else if (type instanceof Class) {
+      Class<?> c = (Class<?>) type;
+      if (c.isArray()) { // array
+        return c.getComponentType();
+      }
+      return c;
+    }
+    return null;
+  }
+
+  Class<?>[] baseTypes = {List.class, Set.class};
 }

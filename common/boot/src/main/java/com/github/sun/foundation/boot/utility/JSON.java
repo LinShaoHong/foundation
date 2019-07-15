@@ -88,7 +88,7 @@ public class JSON {
   }
 
   public static <T> List<T> deserializeAsList(String json, Class<T> clazz) {
-    JavaType type = mapper.getTypeFactory().constructParametricType(List.class, List.class, clazz);
+    JavaType type = mapper.getTypeFactory().constructParametricType(List.class, clazz);
     try {
       return mapper.readValue(json, type);
     } catch (IOException ex) {
@@ -97,12 +97,12 @@ public class JSON {
   }
 
   public static <T> List<T> deserializeAsList(Object object, Class<T> clazz) {
-    JavaType type = mapper.getTypeFactory().constructParametricType(List.class, List.class, clazz);
+    JavaType type = mapper.getTypeFactory().constructParametricType(List.class, clazz);
     return mapper.convertValue(object, type);
   }
 
   public static <T> Set<T> deserializeAsSet(String json, Class<T> clazz) {
-    JavaType type = mapper.getTypeFactory().constructParametricType(Set.class, Set.class, clazz);
+    JavaType type = mapper.getTypeFactory().constructParametricType(Set.class, clazz);
     try {
       return mapper.readValue(json, type);
     } catch (IOException ex) {
@@ -111,7 +111,7 @@ public class JSON {
   }
 
   public static <T> Set<T> deserializeAsSet(Object object, Class<T> clazz) {
-    JavaType type = mapper.getTypeFactory().constructParametricType(Set.class, Set.class, clazz);
+    JavaType type = mapper.getTypeFactory().constructParametricType(Set.class, clazz);
     return mapper.convertValue(object, type);
   }
 

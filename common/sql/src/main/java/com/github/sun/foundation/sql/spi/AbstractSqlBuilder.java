@@ -1,6 +1,7 @@
 package com.github.sun.foundation.sql.spi;
 
 
+import com.github.sun.foundation.boot.utility.Cache;
 import com.github.sun.foundation.boot.utility.Tuple;
 import com.github.sun.foundation.expression.Expression;
 import com.github.sun.foundation.sql.JoinMode;
@@ -18,9 +19,8 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuilder, Cloneable {
   private Stack<AbstractSqlBuilder> delegates;
-  private Map<String, Model> subModelCache = new HashMap<>();
-  private final static Map<Class<?>, Model> modelCache = new HashMap<>();
-  private final static Map<String, Model> dimsModelCache = new HashMap<>();
+  private Cache<String, Model> subModelCache = new Cache<>();
+  private Cache<String, Model> dimsModelCache = new Cache<>();
 
   protected Counter counter;
   protected Context context;
@@ -48,11 +48,12 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
 
   @Override
   public void clear() {
-    subModelCache.clear();
     this.delegates = null;
     this.counter = null;
     this.subSelects = null;
     this.context = null;
+    this.subModelCache = new Cache<>();
+    this.dimsModelCache = new Cache<>();
     clean();
   }
 
@@ -115,16 +116,16 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
   }
 
   protected Model model(Class<?> entityClass) {
-    return modelCache.computeIfAbsent(entityClass, Model::from);
+    return Model.from(entityClass);
   }
 
   private Model model(String tableName) {
-    return dimsModelCache.computeIfAbsent(tableName, table -> {
-      if (table != null) {
+    return dimsModelCache.get(tableName, () -> {
+      if (tableName != null) {
         return new Model.ModelImpl(null) {
           @Override
           public String tableName() {
-            return table;
+            return tableName;
           }
 
           @Override
@@ -148,7 +149,7 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
   }
 
   private Model model(List<Select> selects, String subAlias) {
-    return subModelCache.computeIfAbsent(subAlias, a -> new Model.ModelImpl(null) {
+    return subModelCache.get(subAlias, () -> new Model.ModelImpl(null) {
       @Override
       public List<Property> persistenceProperties() {
         if (selects != null) {
@@ -224,7 +225,7 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
     context.allJoins.put(join.alias, join);
   }
 
-  public Model byAliasFromContext(String alias) {
+  Model byAliasFromContext(String alias) {
     if (context == null) {
       context = new Context();
     }

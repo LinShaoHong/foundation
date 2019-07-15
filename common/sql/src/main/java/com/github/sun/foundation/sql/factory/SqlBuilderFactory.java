@@ -47,7 +47,7 @@ public class SqlBuilderFactory {
     }
   }
 
-  public static SqlBuilder.Factory postgres() {
+  public static SqlBuilder.Factory pg() {
     return Postgres::new;
   }
 

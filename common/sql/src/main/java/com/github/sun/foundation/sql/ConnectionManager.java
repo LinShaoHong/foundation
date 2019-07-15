@@ -122,9 +122,13 @@ public class ConnectionManager {
       if (write) {
         conn.setAutoCommit(false);
       }
+      String url = conn.getMetaData().getURL();
+      DBType.set(DBType.from(url));
       return func.apply(conn);
     } catch (Exception ex) {
       throw new RuntimeException(ex);
+    } finally {
+      DBType.remove();
     }
   }
 

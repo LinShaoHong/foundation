@@ -18,8 +18,9 @@ import static org.junit.Assert.assertEquals;
  * @Date: 11:27 AM 2019-03-01
  */
 public class SqlBuilderTest {
-  private SqlBuilder.Factory factory = SqlBuilderFactory.postgres();
+  private SqlBuilder.Factory factory = SqlBuilderFactory.pg();
 
+  @NamingStrategy
   @Table(name = "table_1")
   private static class Entity1 {
     @Id
@@ -59,6 +60,7 @@ public class SqlBuilderTest {
     }
   }
 
+  @NamingStrategy
   @Table(name = "table_2")
   private static class Entity2 {
     @Id
@@ -71,6 +73,7 @@ public class SqlBuilderTest {
     private Obj obj;
   }
 
+  @NamingStrategy
   @Table(name = "table_3")
   private static class Entity3 {
     @Id
@@ -82,6 +85,7 @@ public class SqlBuilderTest {
     private Obj obj;
   }
 
+  @NamingStrategy
   @Table(name = "table_4")
   private static class Entity4 {
     @Id
@@ -91,6 +95,7 @@ public class SqlBuilderTest {
     private long time;
   }
 
+  @NamingStrategy
   @Table(name = "table_5")
   private static class Entity5 {
     @Id
@@ -162,7 +167,7 @@ public class SqlBuilderTest {
       .innerJoin(Entity3.class, "e3", sb.field("e1.e3Id").eq(sb.field("e3.id")))
       .rightJoin(Entity4.class, "e4", sb.field("e1.id").eq(sb.field("e4.e1Id")))
       .leftJoin(Entity5.class, "e5", sb.field("e1.id").eq(sb.field("e5.e1Id")))
-      .innerJoin("dims_table", "dims", sb.field("dims.e5Id").eq(sb.field("e5.id")))
+      .innerJoin("dims_table", "dims", sb.field("dims.e5_id").eq(sb.field("e5.id")))
       .where(sb.field("e1.name").eq("hello").or(sb.field("e1.nickName").eq("world")))
       .where(sb.field("e2.obj").isNotNull())
       .where(sb.field("e3.time").lt(9876543))

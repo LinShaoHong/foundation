@@ -17,4 +17,22 @@ public enum DBType {
     }
     throw new UnsupportedOperationException("Server do not support the JDBCDatasource with url: " + jdbcUrl);
   }
+
+  private final static ThreadLocal<DBType> context = new ThreadLocal<>();
+
+  public static void set(DBType dbType) {
+    context.set(dbType);
+  }
+
+  public static DBType get() {
+    DBType dbType = context.get();
+    if (dbType == null) {
+      throw new IllegalStateException("Can not find DBType from context.");
+    }
+    return dbType;
+  }
+
+  public static void remove() {
+    context.remove();
+  }
 }

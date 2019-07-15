@@ -1,5 +1,6 @@
 dependencies {
   compile project(":$rootName-test")
+  compile "org.springframework:spring-context:$vers.spring"
   compile "io.github.classgraph:classgraph:$vers.classgraph"
   compile "com.fasterxml.jackson.core:jackson-databind:$vers.jackson"
   compile "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$vers.jackson"

@@ -1,6 +1,9 @@
 dependencies {
   compile project(":$rootName-sql")
   compile "org.mybatis:mybatis:$vers.mybatis"
+  compile "org.mybatis:mybatis-spring:$vers.mybatis_spring"
+  compile "org.springframework:spring-tx:$vers.spring"
+  compile "org.springframework:spring-jdbc:$vers.spring"
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")
