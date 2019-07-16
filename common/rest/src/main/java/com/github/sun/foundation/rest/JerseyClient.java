@@ -14,10 +14,6 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-/**
- * @Author LinSH
- * @Date: 3:45 PM 2019-07-11
- */
 public class JerseyClient {
   private static Client client;
 

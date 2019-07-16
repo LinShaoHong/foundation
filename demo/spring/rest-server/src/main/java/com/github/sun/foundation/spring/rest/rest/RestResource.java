@@ -22,8 +22,10 @@ public class RestResource extends AbstractResource {
   @Path("/test")
   @Produces(MediaType.APPLICATION_JSON)
   public SingleResponse<Entity> test() {
+    mapper.test();
     SqlBuilder.Factory factory = SqlBuilderFactory.mysql();
     SqlBuilder sb = factory.create();
-    return responseOf(mapper.findOneByTemplate(sb.from(Entity.class).where(sb.field("id").eq("a")).template()));
+    Entity entity = mapper.findOneByTemplate(sb.from(Entity.class).where(sb.field("id").eq("a")).template());
+    return responseOf(entity);
   }
 }

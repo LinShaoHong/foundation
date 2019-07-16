@@ -1,12 +1,12 @@
 package com.github.sun.foundation.rest;
 
+import com.github.sun.foundation.boot.Bootstrap;
+import com.github.sun.foundation.boot.Scanner;
 import com.github.sun.foundation.boot.utility.Configurators;
-import com.github.sun.foundation.boot.utility.Packages;
-import com.github.sun.foundation.boot.utility.Scanner;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.ApplicationContext;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.ext.Provider;
@@ -14,21 +14,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * @Author LinSH
- * @Date: 10:31 AM 2019-07-11
- */
-@Configuration
-public class JerseyApplication extends ResourceConfig {
+public abstract class JerseyApplication<A> extends ResourceConfig {
   private static final Logger log = LoggerFactory.getLogger(JerseyApplication.class);
 
-  public JerseyApplication() {
-    Scanner scanner = Scanner.create(Packages.group(getClass()));
-    List<Class<?>> providers = scanner.getClassesWithAnnotation(Provider.class)
+  @SuppressWarnings("unchecked")
+  public JerseyApplication(ApplicationContext context) {
+    Class<A> appClass = (Class<A>) getClass().getGenericSuperclass();
+    Bootstrap bootstrap = Bootstrap.build(appClass, context);
+    bootstrap.startup();
+    List<Class<?>> providers = Scanner.getClassesWithAnnotation(Provider.class)
       .stream()
       .map(Scanner.ClassTag::runtimeClass)
       .collect(Collectors.toList());
-    List<Class<?>> resources = scanner.getClassesWithAnnotation(Path.class)
+    List<Class<?>> resources = Scanner.getClassesWithAnnotation(Path.class)
       .stream()
       .map(Scanner.ClassTag::runtimeClass)
       .collect(Collectors.toList());

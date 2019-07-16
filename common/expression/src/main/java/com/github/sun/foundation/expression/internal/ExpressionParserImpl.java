@@ -12,10 +12,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.List;
 
-/**
- * @Author LinSH
- * @Date: 7:04 PM 2019-02-28
- */
 public class ExpressionParserImpl implements ExpressionParser {
   private final ExpressionBuilder builder = new ExpressionBuilder();
 

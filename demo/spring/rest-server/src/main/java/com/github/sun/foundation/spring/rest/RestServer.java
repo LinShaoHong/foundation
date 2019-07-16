@@ -1,12 +1,16 @@
 package com.github.sun.foundation.spring.rest;
 
+import com.github.sun.foundation.rest.JerseyApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.ApplicationContext;
 
 @SpringBootApplication
-@ComponentScan({"com.github.sun"})
-public class RestServer {
+public class RestServer extends JerseyApplication<RestServer> {
+  public RestServer(ApplicationContext context) {
+    super(context);
+  }
+
   public static void main(String[] args) {
     new SpringApplicationBuilder(RestServer.class).run(args);
   }

@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class AbstractResource {
+public abstract class AbstractResource {
   protected Response responseOf() {
     return new Response(Response.OK, null);
   }

@@ -29,8 +29,6 @@ public abstract class PersistenceConfiguration {
     factoryBean.setDataSource(dataSource);
     PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
     factoryBean.setConfigLocation(resolver.getResource(CONFIG_LOCATION));
-    factoryBean.setMapperLocations(resolver.getResources(getMapperLocations(basePackage())));
-
     return factoryBean;
   }
 
@@ -78,10 +76,6 @@ public abstract class PersistenceConfiguration {
     scannerConfigurer.setBasePackage(basePackage());
     scannerConfigurer.setSqlSessionFactoryBeanName(sqlSessionFactoryName);
     return scannerConfigurer;
-  }
-
-  private String getMapperLocations(String basePackage) {
-    return "classpath:" + basePackage.replaceAll("\\.", "/") + "/*.xml";
   }
 
   private DruidSettings loadSetting(Environment env) {

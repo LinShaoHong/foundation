@@ -8,10 +8,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-/**
- * @Author LinSH
- * @Date: 10:36 AM 2019-07-11
- */
 @Provider
 public class ResponsiveExceptionMapper implements ExceptionMapper<ResponsiveException> {
   private final Logger log = LoggerFactory.getLogger(getClass());

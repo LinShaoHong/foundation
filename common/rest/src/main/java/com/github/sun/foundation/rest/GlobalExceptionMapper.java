@@ -11,10 +11,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-/**
- * @Author LinSH
- * @Date: 10:33 AM 2019-07-11
- */
 @Provider
 public class GlobalExceptionMapper implements ExtendedExceptionMapper<Throwable> {
   private final Logger log = LoggerFactory.getLogger(GlobalExceptionMapper.class);

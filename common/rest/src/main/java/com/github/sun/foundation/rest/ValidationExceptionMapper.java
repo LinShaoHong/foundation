@@ -10,10 +10,6 @@ import javax.ws.rs.ext.Provider;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * @Author LinSH
- * @Date: 10:36 AM 2019-07-11
- */
 @Provider
 public class ValidationExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
   public Response toResponse(ConstraintViolationException exception) {

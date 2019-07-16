@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.MissingNode;
-import com.github.sun.foundation.boot.json.ObjectMapperConfigurator;
 
 import java.io.IOException;
 import java.util.*;
@@ -15,12 +14,6 @@ import java.util.stream.Collectors;
 
 public class JSON {
   private static final ObjectMapper mapper = new ObjectMapper();
-
-  static {
-    Scanner scanner = Scanner.create(Packages.group(JSON.class));
-    scanner.getClassesWithInterface(ObjectMapperConfigurator.class)
-      .forEach(v -> v.getInstance().config(mapper));
-  }
 
   private JSON() {
   }
