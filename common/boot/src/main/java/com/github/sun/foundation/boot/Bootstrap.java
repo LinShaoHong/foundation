@@ -90,7 +90,7 @@ public class Bootstrap {
   }
 
   private <A> Set<String> loadBasePackages(Class<A> appClass) {
-    Set<String> basePackages = new SetHelper();
+    SetHelper basePackages = new SetHelper();
     basePackages.add(appClass.getPackage().getName());
     basePackages.add(Packages.group(Bootstrap.class) + ".foundation");
     Consumer<ComponentScan> func = a -> {
@@ -114,7 +114,8 @@ public class Bootstrap {
   private static class SetHelper extends HashSet<String> {
     @Override
     public boolean addAll(Collection<? extends String> c) {
-      return c.stream().anyMatch(this::add);
+      c.forEach(this::add);
+      return true;
     }
 
     @Override
