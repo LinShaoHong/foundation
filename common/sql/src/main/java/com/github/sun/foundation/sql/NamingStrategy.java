@@ -10,7 +10,7 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NamingStrategy {
-  String value() default CAMEL_CASE_TO_LOWER_UNDERSCORE;
+  String value() default CAMEL_CASE;
 
   String CAMEL_CASE = "camelCase";
   String CAMEL_CASE_TO_LOWER_UNDERSCORE = "camelCaseToLowerUnderscore";

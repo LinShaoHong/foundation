@@ -106,6 +106,7 @@ public interface WriteMapper<T> {
       return new CommandBackend<>(factory(params));
     }
 
+    @SuppressWarnings("Duplicates")
     private SqlBuilder.Factory factory(Map<String, Object> params) {
       DBType dbType = DBType.valueOf(params.get("$DBType").toString());
       switch (dbType) {
@@ -118,6 +119,7 @@ public interface WriteMapper<T> {
       }
     }
 
+    @SuppressWarnings("Duplicates")
     private String id(Class<?> clazz) {
       Model model = Model.from(clazz);
       List<Model.Property> pks = model.primaryProperties();
@@ -127,6 +129,7 @@ public interface WriteMapper<T> {
       return pks.get(0).name();
     }
 
+    @SuppressWarnings("Duplicates")
     private String reset(Map<String, Object> params, SqlBuilder.Template template) {
       params.clear();
       params.putAll(template.parametersAsMap());

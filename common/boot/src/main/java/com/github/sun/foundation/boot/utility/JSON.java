@@ -146,6 +146,10 @@ public class JSON {
     return deserializeAsMap(json, valueClass, v -> v);
   }
 
+  public static <B> Map<String, B> deserializeAsMap(JsonNode node, Class<B> valueClass) {
+    return deserializeAsMap(node.toString(), valueClass, v -> v);
+  }
+
   public static Valuer newValuer(JsonNode node, String... path) {
     return Valuer.of(node, path);
   }

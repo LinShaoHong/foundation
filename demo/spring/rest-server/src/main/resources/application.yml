@@ -3,7 +3,7 @@ spring:
     name: Rest-Server
   datasource:
     restServer:
-      url: "jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF8&useSSL=false&rewriteBatchedStatements=true&autoReconnect=true&failOverReadOnly=false"
+      url: "jdbc:mysql://localhost:3306/sun?useUnicode=true&characterEncoding=UTF8&useSSL=false&rewriteBatchedStatements=true&autoReconnect=true&failOverReadOnly=false"
       username: "root"
       password: "root"
 server:

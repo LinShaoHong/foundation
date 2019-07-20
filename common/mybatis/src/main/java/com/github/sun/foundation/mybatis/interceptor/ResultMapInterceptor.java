@@ -24,10 +24,7 @@ import org.apache.ibatis.type.TypeHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,6 +53,8 @@ public class ResultMapInterceptor extends BasicInterceptor {
           .orElse(null);
         if (method != null) {
           Object arg = invocation.getArgs()[1];
+          arg = arg == null ? new HashMap<String, Object>() : arg;
+          invocation.getArgs()[1] = arg;
           Class<?> entityClass = entityClassCache.get(mapperClass, () -> findEntityClass(mapperClass));
           if (arg instanceof Map) {
             String url = ((BaseExecutor) target).getTransaction().getConnection().getMetaData().getURL();

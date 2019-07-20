@@ -6,6 +6,7 @@ dependencies {
   annotationProcessor "org.projectlombok:lombok:$vers.lombok"
 
   compile "org.springframework:spring-context:$vers.spring"
+  compile "org.springframework.boot:spring-boot:$vers.springboot"
 
   compile "io.github.classgraph:classgraph:$vers.classgraph"
 

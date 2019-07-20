@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-@Table(name = "TEST")
+@Table(name = "demo_test")
 @NamingStrategy(NamingStrategy.CAMEL_CASE_TO_UPPER_UNDERSCORE)
 public class Entity {
   public enum Type {

@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 public class SqlBuilderTest {
   private SqlBuilder.Factory factory = SqlBuilderFactory.pg();
 
-  @NamingStrategy
+  @NamingStrategy(NamingStrategy.CAMEL_CASE_TO_LOWER_UNDERSCORE)
   @Table(name = "table_1")
   private static class Entity1 {
     @Id
@@ -60,7 +60,7 @@ public class SqlBuilderTest {
     }
   }
 
-  @NamingStrategy
+  @NamingStrategy(NamingStrategy.CAMEL_CASE_TO_LOWER_UNDERSCORE)
   @Table(name = "table_2")
   private static class Entity2 {
     @Id
@@ -73,7 +73,7 @@ public class SqlBuilderTest {
     private Obj obj;
   }
 
-  @NamingStrategy
+  @NamingStrategy(NamingStrategy.CAMEL_CASE_TO_LOWER_UNDERSCORE)
   @Table(name = "table_3")
   private static class Entity3 {
     @Id
@@ -85,7 +85,7 @@ public class SqlBuilderTest {
     private Obj obj;
   }
 
-  @NamingStrategy
+  @NamingStrategy(NamingStrategy.CAMEL_CASE_TO_LOWER_UNDERSCORE)
   @Table(name = "table_4")
   private static class Entity4 {
     @Id
@@ -95,7 +95,7 @@ public class SqlBuilderTest {
     private long time;
   }
 
-  @NamingStrategy
+  @NamingStrategy(NamingStrategy.CAMEL_CASE_TO_LOWER_UNDERSCORE)
   @Table(name = "table_5")
   private static class Entity5 {
     @Id

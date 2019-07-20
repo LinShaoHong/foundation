@@ -1,5 +1,6 @@
 package com.github.sun.foundation.rest;
 
+import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.spi.ExtendedExceptionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +12,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+@Slf4j
 @Provider
 public class GlobalExceptionMapper implements ExtendedExceptionMapper<Throwable> {
-  private final Logger log = LoggerFactory.getLogger(GlobalExceptionMapper.class);
-
   @Override
   public boolean isMappable(Throwable exception) {
     return !(exception instanceof WebApplicationException);

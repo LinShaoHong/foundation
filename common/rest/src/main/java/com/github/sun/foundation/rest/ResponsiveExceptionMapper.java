@@ -1,17 +1,15 @@
 package com.github.sun.foundation.rest;
 
 import com.github.sun.foundation.boot.exception.ResponsiveException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+@Slf4j
 @Provider
 public class ResponsiveExceptionMapper implements ExceptionMapper<ResponsiveException> {
-  private final Logger log = LoggerFactory.getLogger(getClass());
-
   @Override
   public Response toResponse(ResponsiveException exception) {
     if (exception.getKind() == ResponsiveException.Kind.UNEXPECTED) {

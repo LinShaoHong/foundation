@@ -4,24 +4,23 @@ import com.github.sun.foundation.boot.json.ObjectMapperConfigurator;
 import com.github.sun.foundation.boot.utility.Iterators;
 import com.github.sun.foundation.boot.utility.JSON;
 import com.github.sun.foundation.boot.utility.Packages;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScans;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
+@Slf4j
 public class Bootstrap {
-  private static final Logger log = LoggerFactory.getLogger(Bootstrap.class);
   private static Bootstrap instance;
 
   private final Class<?> appClass;
   private final ApplicationContext context;
+
+  private List<Lifecycle> services;
 
   private Bootstrap(Class<?> appClass, ApplicationContext context) {
     this.appClass = appClass;
@@ -36,12 +35,53 @@ public class Bootstrap {
   }
 
   public void startup() {
-    // install injector
-    Injector.install(context);
-    // install scanner
-    Scanner.install(loadBasePackages(appClass).toArray(new String[0]));
-    // init JSON
-    configObjectMapper();
+    try {
+      // install injector
+      Injector.install(context);
+      // install scanner
+      Scanner.install(loadBasePackages(appClass).toArray(new String[0]));
+      // init JSON
+      configObjectMapper();
+      // start services
+      startServices();
+    } catch (Throwable ex) {
+      log.error("Error occurs during startup", ex);
+      cleanup();
+    }
+  }
+
+  public void shutdown() {
+    try {
+      if (services != null) {
+        services.forEach(Lifecycle::shutdown);
+      }
+    } catch (Throwable ex) {
+      log.error("Error occurs during shutdown", ex);
+      cleanup();
+    }
+  }
+
+  private void cleanup() {
+    this.services = null;
+    log.info("Terminated.");
+    System.exit(1);
+  }
+
+  private void startServices() {
+    services = Injector.interfaceOf(Lifecycle.class);
+    services.addAll(Scanner.getClassesWithInterface(Lifecycle.class)
+      .stream()
+      .filter(s -> services.stream().noneMatch(v -> v.getClass() == s.runtimeClass()))
+      .map(Scanner.ClassTag::getInstance)
+      .collect(Collectors.toList()));
+    services.sort((s1, s2) -> {
+      Order o1 = s1.getClass().getAnnotation(Order.class);
+      Order o2 = s2.getClass().getAnnotation(Order.class);
+      int i1 = o1 == null ? Order.DEFAULT : o1.value();
+      int i2 = o1 == null ? Order.DEFAULT : o2.value();
+      return i1 - i2;
+    });
+    services.forEach(Lifecycle::startup);
   }
 
   private void configObjectMapper() {
@@ -51,11 +91,10 @@ public class Bootstrap {
 
   private <A> Set<String> loadBasePackages(Class<A> appClass) {
     Set<String> basePackages = new SetHelper();
+    basePackages.add(appClass.getPackage().getName());
     basePackages.add(Packages.group(Bootstrap.class) + ".foundation");
     Consumer<ComponentScan> func = a -> {
-      if (a == null || a.value().length == 0) {
-        basePackages.add(appClass.getPackage().getName());
-      } else {
+      if (a != null && a.value().length > 0) {
         basePackages.addAll(Arrays.asList(a.value()));
       }
     };
