@@ -1,19 +1,57 @@
 package com.github.sun.foundation.quartz;
 
-import org.quartz.Job;
+import com.github.sun.foundation.boot.Injector;
 import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 import java.util.Calendar;
 import java.util.Date;
 
 public interface Scheduler {
-  void scheduleOnce(Date start, JobAdapter adapter);
+  void scheduleOnce(Date start, Task task);
 
-  void schedule(Date start, int rate, CalendarUnit unit, JobAdapter adapter);
+  void schedule(Date start, int rate, CalendarUnit unit, Task task);
 
   void startup();
 
   void shutdown();
+
+  interface Task extends Runnable {
+    default String id() {
+      return getClass().getName();
+    }
+
+    Date start();
+
+    String rate();
+
+    default void run() {
+    }
+
+    default JobDataMap data() {
+      JobDataMap data = new JobDataMap();
+      data.put("$JOB_CLASS", id());
+      return data;
+    }
+
+    default Class<? extends org.quartz.Job> jobClass() {
+      return JobAdapter.class;
+    }
+  }
+
+  class JobAdapter implements org.quartz.Job {
+    @Override
+    public void execute(JobExecutionContext context) throws JobExecutionException {
+      try {
+        String taskClass = context.getJobDetail().getJobDataMap().get("$JOB_CLASS").toString();
+        Task task = (Task) Injector.getInstance(Class.forName(taskClass));
+        task.run();
+      } catch (ClassNotFoundException ex) {
+        throw new JobExecutionException(ex);
+      }
+    }
+  }
 
   enum CalendarUnit {
     YEARS(Calendar.YEAR),
@@ -30,15 +68,45 @@ public interface Scheduler {
     }
   }
 
-  interface JobAdapter {
-    String id();
+  static Rate parseRate(String rate) {
+    rate = rate.trim();
+    Scheduler.CalendarUnit unit;
+    switch (rate.charAt(rate.length() - 1)) {
+      case 's':
+        unit = Scheduler.CalendarUnit.SECONDS;
+        break;
+      case 'm':
+        unit = Scheduler.CalendarUnit.MINUTES;
+        break;
+      case 'h':
+      case 'H':
+        unit = Scheduler.CalendarUnit.HOURS;
+        break;
+      case 'D':
+      case 'd':
+        unit = Scheduler.CalendarUnit.DAYS;
+        break;
+      case 'M':
+        unit = Scheduler.CalendarUnit.MONTHS;
+        break;
+      case 'Y':
+      case 'y':
+        unit = Scheduler.CalendarUnit.YEARS;
+        break;
+      default:
+        throw new IllegalArgumentException();
+    }
+    int value = Integer.parseInt(rate.substring(0, rate.length() - 1));
+    return new Rate(value, unit);
+  }
 
-    Date start();
+  class Rate {
+    public final int value;
+    public final CalendarUnit unit;
 
-    String rate();
-
-    JobDataMap data();
-
-    Class<? extends Job> jobClass();
+    private Rate(int value, CalendarUnit unit) {
+      this.value = value;
+      this.unit = unit;
+    }
   }
 }

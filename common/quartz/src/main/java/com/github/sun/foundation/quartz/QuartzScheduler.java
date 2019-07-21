@@ -1,7 +1,10 @@
 package com.github.sun.foundation.quartz;
 
+import com.github.sun.foundation.boot.InjectionProvider;
+import com.github.sun.foundation.boot.utility.Cache;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
+import org.quartz.impl.StdSchedulerFactory;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -10,26 +13,25 @@ import java.util.Date;
 
 @Slf4j
 public class QuartzScheduler implements Scheduler {
-  private static String JOB_CLASS = "class";
   private final org.quartz.Scheduler quartz;
 
-  public QuartzScheduler(org.quartz.Scheduler quartz) {
+  private QuartzScheduler(org.quartz.Scheduler quartz) {
     this.quartz = quartz;
   }
 
   @Override
-  public void scheduleOnce(Date start, JobAdapter adapter) {
+  public void scheduleOnce(Date start, Task task) {
     Date now = new Date();
     if (start.before(now)) {
       start = now;
     }
     DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     log.info("Start scheduled task once at " + format.format(start));
-    schedule(start, null, adapter);
+    schedule(start, null, task);
   }
 
   @Override
-  public void schedule(Date start, int rate, CalendarUnit unit, JobAdapter adapter) {
+  public void schedule(Date start, int rate, CalendarUnit unit, Task task) {
     CalendarIntervalScheduleBuilder builder = CalendarIntervalScheduleBuilder.calendarIntervalSchedule();
     switch (unit) {
       case YEARS:
@@ -54,7 +56,7 @@ public class QuartzScheduler implements Scheduler {
     start = getStartTime(start, unit, rate);
     DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     log.info("Start scheduling task periodically every " + rate + " " + unit.toString().toLowerCase() + " from " + format.format(start));
-    schedule(start, builder, adapter);
+    schedule(start, builder, task);
   }
 
   @Override
@@ -92,24 +94,51 @@ public class QuartzScheduler implements Scheduler {
     return c.getTime();
   }
 
-  private void schedule(Date start, ScheduleBuilder<? extends Trigger> builder, JobAdapter adapter) {
-    JobDetail job = JobBuilder.newJob(adapter.jobClass())
-      .withIdentity(adapter.id())
-      .setJobData(adapter.data())
+  private void schedule(Date start, ScheduleBuilder<? extends Trigger> builder, Task task) {
+    JobDetail detail = JobBuilder.newJob(task.jobClass())
+      .withIdentity(task.id())
+      .setJobData(task.data())
       .build();
     Trigger trigger = TriggerBuilder.newTrigger()
-      .withIdentity(adapter.id())
+      .withIdentity(task.id())
       .startAt(start)
       .withSchedule(builder)
       .build();
     try {
       try {
-        quartz.scheduleJob(job, trigger);
+        quartz.scheduleJob(detail, trigger);
       } catch (ObjectAlreadyExistsException ex) {
-        quartz.rescheduleJob(TriggerKey.triggerKey(adapter.id()), trigger);
+        quartz.rescheduleJob(TriggerKey.triggerKey(task.id()), trigger);
       }
     } catch (SchedulerException ex) {
       throw new RuntimeException(ex);
+    }
+  }
+
+  public static class ScheduleInjectionProvider implements InjectionProvider {
+    private static final Cache<Class<? extends Job>, Job> cache = new Cache<>();
+
+    @Override
+    public void config(Binder binder) {
+      try {
+        StdSchedulerFactory factory = new StdSchedulerFactory();
+        org.quartz.Scheduler scheduler = factory.getScheduler();
+        scheduler.setJobFactory((b, s) -> {
+          Class<? extends Job> jobClass = b.getJobDetail().getJobClass();
+          return cache.get(jobClass, () -> newInstance(jobClass));
+        });
+        binder.bind(new QuartzScheduler(scheduler));
+      } catch (SchedulerException ex) {
+        throw new RuntimeException(ex);
+      }
+    }
+
+    private <T> T newInstance(Class<T> clazz) {
+      try {
+        return clazz.newInstance();
+      } catch (InstantiationException | IllegalAccessException ex) {
+        throw new RuntimeException(ex);
+      }
     }
   }
 }

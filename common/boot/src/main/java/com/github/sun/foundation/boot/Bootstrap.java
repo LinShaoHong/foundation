@@ -42,6 +42,8 @@ public class Bootstrap {
       Scanner.install(loadBasePackages(appClass).toArray(new String[0]));
       // init JSON
       configObjectMapper();
+      // load injections
+      loadInjectProviders();
       // start services
       startServices();
     } catch (Throwable ex) {
@@ -65,6 +67,19 @@ public class Bootstrap {
     this.services = null;
     log.info("Terminated.");
     System.exit(1);
+  }
+
+  private void loadInjectProviders() {
+    List<InjectionProvider> providers = Scanner.getClassesWithInterface(InjectionProvider.class)
+      .stream()
+      .map(Scanner.ClassTag::getInstance)
+      .collect(Collectors.toList());
+    Set<String> set = providers.stream()
+      .map(v -> v.getClass().getName())
+      .collect(Collectors.toSet());
+    providers.forEach(p -> p.config(new InjectionProvider.BinderImpl()));
+    log.info("Inject by following providers:{}",
+      Iterators.mkString(set, "\n- ", "\n- ", "\n"));
   }
 
   private void startServices() {
