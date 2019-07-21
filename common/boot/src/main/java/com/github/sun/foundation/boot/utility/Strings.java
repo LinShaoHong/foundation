@@ -1,5 +1,8 @@
 package com.github.sun.foundation.boot.utility;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -104,6 +107,17 @@ public class Strings {
       }
     }
     return sb.toString();
+  }
+
+  public static String hash(String s) {
+    try {
+      MessageDigest md = MessageDigest.getInstance("SHA-1");
+      byte[] buf = s.getBytes(StandardCharsets.UTF_8);
+      buf = md.digest(buf);
+      return Hex.bytes2hex(buf);
+    } catch (NoSuchAlgorithmException ex) {
+      throw new RuntimeException(ex);
+    }
   }
 
   public static Parser newParser() {

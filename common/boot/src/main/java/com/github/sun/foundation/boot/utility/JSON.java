@@ -206,7 +206,7 @@ public class JSON {
     }
 
     public long asLong(long defaultValue) {
-      return hasValue() ? node.intValue() : defaultValue;
+      return hasValue() ? node.longValue() : defaultValue;
     }
 
     public long asLong() {
@@ -214,6 +214,17 @@ public class JSON {
         throw error("Expected Long but found: " + node.getNodeType(), path);
       }
       return node.longValue();
+    }
+
+    public double asDouble(double defaultValue) {
+      return hasValue() ? node.doubleValue() : defaultValue;
+    }
+
+    public double asDouble() {
+      if (!node.isLong()) {
+        throw error("Expected Long but found: " + node.getNodeType(), path);
+      }
+      return node.doubleValue();
     }
 
     public boolean asBoolean(boolean defaultValue) {

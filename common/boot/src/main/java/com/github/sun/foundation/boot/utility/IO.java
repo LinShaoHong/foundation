@@ -2,9 +2,11 @@ package com.github.sun.foundation.boot.utility;
 
 import lombok.experimental.UtilityClass;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class IO {
@@ -24,5 +26,15 @@ public class IO {
     } catch (IOException ex) {
       throw new RuntimeException(ex);
     }
+  }
+
+  public void delete(File f) {
+    if (f.isDirectory()) {
+      File[] files = f.listFiles();
+      if (files != null) {
+        Stream.of(files).forEach(IO::delete);
+      }
+    }
+    f.delete();
   }
 }
