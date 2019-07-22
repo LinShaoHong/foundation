@@ -26,9 +26,6 @@ public interface Scheduler {
 
     String rate();
 
-    default void run() {
-    }
-
     default JobDataMap data() {
       JobDataMap data = new JobDataMap();
       data.put("$JOB_CLASS", id());
