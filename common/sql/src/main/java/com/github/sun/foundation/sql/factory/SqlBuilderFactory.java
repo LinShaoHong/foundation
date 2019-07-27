@@ -1,5 +1,6 @@
 package com.github.sun.foundation.sql.factory;
 
+import com.github.sun.foundation.boot.InjectionProvider;
 import com.github.sun.foundation.expression.Expression;
 import com.github.sun.foundation.sql.SqlBuilder;
 import com.github.sun.foundation.sql.spi.BasicSqlBuilder;
@@ -10,6 +11,14 @@ import com.github.sun.foundation.sql.spi.SqlTemplate;
  * @Date: 2:40 PM 2019-03-04
  */
 public class SqlBuilderFactory {
+  public static class Provider implements InjectionProvider {
+    @Override
+    public void config(Binder binder) {
+      binder.named("mysql").bind(mysql());
+      binder.named("pg").bind(pg());
+    }
+  }
+
   public static SqlBuilder.Factory mysql() {
     return Mysql::new;
   }

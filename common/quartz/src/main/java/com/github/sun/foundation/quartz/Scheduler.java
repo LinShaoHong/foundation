@@ -13,6 +13,14 @@ public interface Scheduler {
 
   void schedule(Date start, int rate, CalendarUnit unit, Task task);
 
+  boolean has(String taskId);
+
+  void pause(String taskId);
+
+  void resume(String taskId);
+
+  void delete(String taskId);
+
   void startup();
 
   void shutdown();
@@ -22,9 +30,13 @@ public interface Scheduler {
       return getClass().getName();
     }
 
-    Date start();
+    default Date start() {
+      return null;
+    }
 
-    String rate();
+    default String rate() {
+      return null;
+    }
 
     default JobDataMap data() {
       JobDataMap data = new JobDataMap();

@@ -74,12 +74,14 @@ public class Bootstrap {
       .stream()
       .map(Scanner.ClassTag::getInstance)
       .collect(Collectors.toList());
-    Set<String> set = providers.stream()
-      .map(v -> v.getClass().getName())
-      .collect(Collectors.toSet());
-    providers.forEach(p -> p.config(new InjectionProvider.BinderImpl()));
-    log.info("Inject by following providers:{}",
-      Iterators.mkString(set, "\n- ", "\n- ", "\n"));
+    if (!providers.isEmpty()) {
+      Set<String> set = providers.stream()
+        .map(v -> v.getClass().getName())
+        .collect(Collectors.toSet());
+      providers.forEach(p -> p.config(new InjectionProvider.BinderImpl()));
+      log.info("Inject by following providers:{}",
+        Iterators.mkString(set, "\n- ", "\n- ", "\n"));
+    }
   }
 
   private void startServices() {
@@ -93,7 +95,7 @@ public class Bootstrap {
       Order o1 = s1.getClass().getAnnotation(Order.class);
       Order o2 = s2.getClass().getAnnotation(Order.class);
       int i1 = o1 == null ? Order.DEFAULT : o1.value();
-      int i2 = o1 == null ? Order.DEFAULT : o2.value();
+      int i2 = o2 == null ? Order.DEFAULT : o2.value();
       return i1 - i2;
     });
     services.forEach(Lifecycle::startup);

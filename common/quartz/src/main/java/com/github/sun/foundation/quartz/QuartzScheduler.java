@@ -15,7 +15,7 @@ import java.util.Date;
 public class QuartzScheduler implements Scheduler {
   private final org.quartz.Scheduler quartz;
 
-  private QuartzScheduler(org.quartz.Scheduler quartz) {
+  public QuartzScheduler(org.quartz.Scheduler quartz) {
     this.quartz = quartz;
   }
 
@@ -57,6 +57,46 @@ public class QuartzScheduler implements Scheduler {
     DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     log.info("Start scheduling task periodically every " + rate + " " + unit.toString().toLowerCase() + " from " + format.format(start));
     schedule(start, builder, task);
+  }
+
+  @Override
+  public boolean has(String taskId) {
+    JobKey jobKey = new JobKey(taskId);
+    try {
+      return quartz.getJobDetail(jobKey) != null;
+    } catch (SchedulerException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  @Override
+  public void pause(String taskId) {
+    JobKey jobKey = new JobKey(taskId);
+    try {
+      quartz.pauseJob(jobKey);
+    } catch (SchedulerException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  @Override
+  public void resume(String taskId) {
+    JobKey jobKey = new JobKey(taskId);
+    try {
+      quartz.resumeJob(jobKey);
+    } catch (SchedulerException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  @Override
+  public void delete(String taskId) {
+    JobKey jobKey = new JobKey(taskId);
+    try {
+      quartz.deleteJob(jobKey);
+    } catch (SchedulerException ex) {
+      throw new RuntimeException(ex);
+    }
   }
 
   @Override

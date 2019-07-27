@@ -3,6 +3,7 @@ package com.github.sun.foundation.expression;
 import com.github.sun.foundation.boot.utility.Tuple;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -603,6 +604,7 @@ public interface Expression {
   @Value.Immutable
   @Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE)
   interface Literal extends Expression {
+    @Nullable
     @Value.Parameter
     Object value();
 
@@ -627,6 +629,7 @@ public interface Expression {
     @Value.Parameter
     String name();
 
+    @Nullable
     @Value.Parameter
     Object value();
 

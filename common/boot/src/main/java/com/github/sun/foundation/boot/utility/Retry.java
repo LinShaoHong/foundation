@@ -14,13 +14,14 @@ public class Retry {
     int counter = 1;
     maxCount = maxCount <= 0 ? 1 : maxCount;
     for (; ; ) {
-      Thread.sleep(delayInMs);
       try {
         return func.call();
       } catch (Exception ex) {
         counter++;
         if (counter > maxCount) {
           throw ex;
+        } else {
+          Thread.sleep(delayInMs);
         }
       }
     }
