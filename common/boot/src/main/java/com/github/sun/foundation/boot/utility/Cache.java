@@ -8,6 +8,14 @@ import java.util.function.Supplier;
 public class Cache<K, V> {
   private Map<K, V> cache = Collections.emptyMap();
 
+  public void remove(K key) {
+    cache.remove(key);
+  }
+
+  public V get(K key) {
+    return get(key, () -> null);
+  }
+
   public V get(K key, Supplier<V> func) {
     V value = cache.get(key);
     if (value == null) {
