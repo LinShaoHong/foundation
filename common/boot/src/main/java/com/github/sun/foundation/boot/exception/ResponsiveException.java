@@ -1,9 +1,5 @@
 package com.github.sun.foundation.boot.exception;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 /**
  * 响应异常, 自定义异常需继承ResponsiveException，用以将异常信息返回给前端
  */
@@ -60,15 +56,5 @@ public abstract class ResponsiveException extends RuntimeException {
 
   public Kind getKind() {
     return kind;
-  }
-
-  public static String stackTraceOf(Throwable ex) {
-    try (StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter(sw)) {
-      ex.printStackTrace(pw);
-      return sw.toString();
-    } catch (IOException ex2) {
-      return ex.getMessage();
-    }
   }
 }

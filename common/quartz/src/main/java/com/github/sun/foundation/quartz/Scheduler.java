@@ -11,7 +11,11 @@ import java.util.Date;
 public interface Scheduler {
   void scheduleOnce(Date start, Task task);
 
+  void rescheduleOnce(Date start, String taskId);
+
   void schedule(Date start, int rate, CalendarUnit unit, Task task);
+
+  void reschedule(Date start, int rate, CalendarUnit unit, String taskId);
 
   boolean has(String taskId);
 

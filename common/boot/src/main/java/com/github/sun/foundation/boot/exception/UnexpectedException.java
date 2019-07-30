@@ -1,5 +1,7 @@
 package com.github.sun.foundation.boot.exception;
 
+import com.github.sun.foundation.boot.utility.Throws;
+
 public class UnexpectedException extends ResponsiveException {
   public UnexpectedException(String message) {
     super(message, Kind.UNEXPECTED);
@@ -18,7 +20,7 @@ public class UnexpectedException extends ResponsiveException {
     String message = super.getMessage();
     Throwable cause = getCause();
     if (cause != null) {
-      message = message + "\nCause by " + stackTraceOf(cause);
+      message = message + "\nCause by " + Throws.stackTraceOf(cause);
     }
     return message;
   }

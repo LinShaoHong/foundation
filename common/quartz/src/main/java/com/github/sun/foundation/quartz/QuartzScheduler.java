@@ -31,7 +31,35 @@ public class QuartzScheduler implements Scheduler {
   }
 
   @Override
+  public void rescheduleOnce(Date start, String taskId) {
+    Date now = new Date();
+    if (start.before(now)) {
+      start = now;
+    }
+    DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    log.info("Start rescheduled task once at " + format.format(start));
+    reschedule(start, null, taskId);
+  }
+
+  @Override
   public void schedule(Date start, int rate, CalendarUnit unit, Task task) {
+    CalendarIntervalScheduleBuilder builder = scheduleBuilder(rate, unit);
+    start = getStartTime(start, unit, rate);
+    DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    log.info("Start scheduling task periodically every " + rate + " " + unit.toString().toLowerCase() + " from " + format.format(start));
+    schedule(start, builder, task);
+  }
+
+  @Override
+  public void reschedule(Date start, int rate, CalendarUnit unit, String taskId) {
+    CalendarIntervalScheduleBuilder builder = scheduleBuilder(rate, unit);
+    start = getStartTime(start, unit, rate);
+    DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    log.info("Start rescheduling task periodically every " + rate + " " + unit.toString().toLowerCase() + " from " + format.format(start));
+    reschedule(start, builder, taskId);
+  }
+
+  private CalendarIntervalScheduleBuilder scheduleBuilder(int rate, CalendarUnit unit) {
     CalendarIntervalScheduleBuilder builder = CalendarIntervalScheduleBuilder.calendarIntervalSchedule();
     switch (unit) {
       case YEARS:
@@ -53,10 +81,7 @@ public class QuartzScheduler implements Scheduler {
         builder.withIntervalInSeconds(rate);
         break;
     }
-    start = getStartTime(start, unit, rate);
-    DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    log.info("Start scheduling task periodically every " + rate + " " + unit.toString().toLowerCase() + " from " + format.format(start));
-    schedule(start, builder, task);
+    return builder;
   }
 
   @Override
@@ -150,6 +175,20 @@ public class QuartzScheduler implements Scheduler {
       } catch (ObjectAlreadyExistsException ex) {
         quartz.rescheduleJob(TriggerKey.triggerKey(task.id()), trigger);
       }
+    } catch (SchedulerException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  private void reschedule(Date start, ScheduleBuilder<? extends Trigger> builder, String taskId) {
+    TriggerKey triggerKey = new TriggerKey(taskId);
+    Trigger newTrigger = TriggerBuilder.newTrigger()
+      .withIdentity(taskId)
+      .startAt(start)
+      .withSchedule(builder)
+      .build();
+    try {
+      quartz.rescheduleJob(triggerKey, newTrigger);
     } catch (SchedulerException ex) {
       throw new RuntimeException(ex);
     }
