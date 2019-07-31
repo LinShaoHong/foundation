@@ -55,6 +55,7 @@ public class Bootstrap {
   public void shutdown() {
     try {
       if (services != null) {
+        Collections.reverse(services);
         services.forEach(Lifecycle::shutdown);
       }
     } catch (Throwable ex) {
