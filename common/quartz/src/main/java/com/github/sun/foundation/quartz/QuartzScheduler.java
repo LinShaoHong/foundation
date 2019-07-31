@@ -1,6 +1,9 @@
 package com.github.sun.foundation.quartz;
 
 import com.github.sun.foundation.boot.InjectionProvider;
+import com.github.sun.foundation.boot.Injector;
+import com.github.sun.foundation.boot.Lifecycle;
+import com.github.sun.foundation.boot.Order;
 import com.github.sun.foundation.boot.utility.Cache;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
@@ -178,6 +181,29 @@ public class QuartzScheduler implements Scheduler {
         return clazz.newInstance();
       } catch (InstantiationException | IllegalAccessException ex) {
         throw new RuntimeException(ex);
+      }
+    }
+  }
+
+  @Order(Order.BACKGROUND_TASK)
+  public static class TaskRunner implements Lifecycle {
+    private Scheduler scheduler;
+
+    @Override
+    public void startup() {
+      scheduler = Injector.getInstance(Scheduler.class);
+      scheduler.startup();
+      Injector.interfaceOf(Scheduler.Task.class)
+        .forEach(task -> {
+          Scheduler.Rate rate = Scheduler.parseRate(task.rate());
+          scheduler.schedule(task.start(), rate.value, rate.unit, task);
+        });
+    }
+
+    @Override
+    public void shutdown() {
+      if (scheduler != null) {
+        scheduler.shutdown();
       }
     }
   }
