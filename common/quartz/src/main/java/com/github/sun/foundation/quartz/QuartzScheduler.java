@@ -85,46 +85,6 @@ public class QuartzScheduler implements Scheduler {
   }
 
   @Override
-  public boolean has(String taskId) {
-    JobKey jobKey = new JobKey(taskId);
-    try {
-      return quartz.getJobDetail(jobKey) != null;
-    } catch (SchedulerException ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  @Override
-  public void pause(String taskId) {
-    JobKey jobKey = new JobKey(taskId);
-    try {
-      quartz.pauseJob(jobKey);
-    } catch (SchedulerException ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  @Override
-  public void resume(String taskId) {
-    JobKey jobKey = new JobKey(taskId);
-    try {
-      quartz.resumeJob(jobKey);
-    } catch (SchedulerException ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  @Override
-  public void delete(String taskId) {
-    JobKey jobKey = new JobKey(taskId);
-    try {
-      quartz.deleteJob(jobKey);
-    } catch (SchedulerException ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  @Override
   public void startup() {
     try {
       quartz.start();
@@ -201,12 +161,13 @@ public class QuartzScheduler implements Scheduler {
     public void config(Binder binder) {
       try {
         StdSchedulerFactory factory = new StdSchedulerFactory();
-        org.quartz.Scheduler scheduler = factory.getScheduler();
-        scheduler.setJobFactory((b, s) -> {
+        org.quartz.Scheduler quartz = factory.getScheduler();
+        quartz.setJobFactory((b, s) -> {
           Class<? extends Job> jobClass = b.getJobDetail().getJobClass();
           return cache.get(jobClass, () -> newInstance(jobClass));
         });
-        binder.bind(new QuartzScheduler(scheduler));
+        binder.bind(quartz);
+        binder.bind(new QuartzScheduler(quartz));
       } catch (SchedulerException ex) {
         throw new RuntimeException(ex);
       }

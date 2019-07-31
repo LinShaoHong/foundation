@@ -17,14 +17,6 @@ public interface Scheduler {
 
   void reschedule(Date start, int rate, CalendarUnit unit, String taskId);
 
-  boolean has(String taskId);
-
-  void pause(String taskId);
-
-  void resume(String taskId);
-
-  void delete(String taskId);
-
   void startup();
 
   void shutdown();
