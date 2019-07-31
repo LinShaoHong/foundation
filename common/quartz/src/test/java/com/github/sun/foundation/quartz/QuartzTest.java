@@ -2,10 +2,7 @@ package com.github.sun.foundation.quartz;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.quartz.SchedulerException;
+import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.util.Date;
@@ -43,24 +40,24 @@ public class QuartzTest {
   }
 
   @Test
-  public void test_pause() {
+  public void test_pause() throws SchedulerException {
     long now = System.currentTimeMillis();
     TaskImpl task = new TaskImpl();
     scheduler.schedule(new Date(now + 2000), 3, Scheduler.CalendarUnit.SECONDS, task);
     sleep(10000);
-    scheduler.pause(task.id());
+    quartz.pauseJob(new JobKey(task.id()));
     sleep(10000);
-    scheduler.resume(task.id());
+    quartz.resumeJob(new JobKey(task.id()));
     sleep(40000);
   }
 
   @Test
-  public void test_delete() {
+  public void test_delete() throws SchedulerException {
     long now = System.currentTimeMillis();
     TaskImpl task = new TaskImpl();
     scheduler.schedule(new Date(now + 2000), 3, Scheduler.CalendarUnit.SECONDS, task);
     sleep(10000);
-    scheduler.delete(task.id());
+    quartz.resumeJob(new JobKey(task.id()));
     sleep(10000);
   }
 
