@@ -2,8 +2,6 @@ package com.github.sun.foundation.rest;
 
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.spi.ExtendedExceptionMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -27,7 +25,9 @@ public class GlobalExceptionMapper implements ExtendedExceptionMapper<Throwable>
       PrintWriter pw = new PrintWriter(sw)
     ) {
       exception.printStackTrace(pw);
-      return Response.serverError().entity(sw.toString()).type("text/plain;charset=UTF-8").build();
+      return Response.serverError().entity(sw.toString())
+        .type("text/plain;charset=UTF-8")
+        .build();
     } catch (IOException ex) {
       log.error("异常处理错误", ex);
       return Response.serverError().build();
