@@ -584,7 +584,7 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
     } else {
       sets = updateSets.get(updateSets.size() - 1);
     }
-    sets.put(field, value);
+    sets.put(field, value == null ? Expression.EMPTY : value);
     return this;
   }
 

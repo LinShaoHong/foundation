@@ -618,8 +618,8 @@ public interface Expression {
       return visitor.onLiteral(this);
     }
 
-    static Literal of(Object value) {
-      return ImmutableLiteral.of(value);
+    static Expression of(Object value) {
+      return value == null ? EMPTY : ImmutableLiteral.of(value);
     }
   }
 
