@@ -715,4 +715,16 @@ public interface Expression {
       return null;
     }
   }
+
+  static Predicate nonNull(Object value) {
+    return when(value != null);
+  }
+
+  static Predicate when(boolean judge) {
+    return expr -> judge ? expr : EMPTY;
+  }
+
+  interface Predicate {
+    Expression then(Expression expr);
+  }
 }

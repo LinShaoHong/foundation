@@ -10,6 +10,10 @@ dependencies {
 
   compile "io.github.classgraph:classgraph:$vers.classgraph"
 
+  compile "com.github.ben-manes.caffeine:caffeine:$vers.caffeine"
+
+  compile "com.github.stuxuhai:jpinyin:$vers.jpinyin"
+
   compile "com.fasterxml.jackson.core:jackson-databind:$vers.jackson"
   compile "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$vers.jackson"
   compile "com.fasterxml.jackson.module:jackson-module-paranamer:$vers.jackson"
