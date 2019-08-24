@@ -2,9 +2,6 @@ dependencies {
   compile project(":$rootName-test")
   compile "org.slf4j:slf4j-api:1.7.26"
 
-  compile "org.projectlombok:lombok:$vers.lombok"
-  annotationProcessor "org.projectlombok:lombok:$vers.lombok"
-
   compile "org.springframework:spring-context:$vers.spring"
   compile "org.springframework.boot:spring-boot:$vers.springboot"
 
