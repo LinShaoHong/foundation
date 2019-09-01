@@ -1,12 +1,14 @@
 package com.github.sun.foundation.rest;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 public abstract class AbstractResource {
   protected Response responseOf() {
     return new Response(Response.OK, null);
@@ -14,10 +16,6 @@ public abstract class AbstractResource {
 
   protected Response responseOf(int code, String message) {
     return new Response(code, message);
-  }
-
-  protected CountResponse responseOf(int count) {
-    return new CountResponse(count);
   }
 
   protected <T> SingleResponse<T> responseOf(T value) {
@@ -47,16 +45,6 @@ public abstract class AbstractResource {
       this.code = code;
       this.message = message;
     }
-  }
-
-  @JsonPropertyOrder({"code", "message", "count"})
-  public static class CountResponse extends Response {
-    public CountResponse(int count) {
-      super(OK, null);
-      this.count = count;
-    }
-
-    public int count;
   }
 
   interface ValueResponse<A> {

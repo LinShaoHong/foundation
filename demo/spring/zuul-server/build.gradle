@@ -3,6 +3,5 @@ dependencies {
   compile "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client"
 }
 
-apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")
-apply from: rootProject.file("buildscript/gradle/sub_springboot.gradle")
 apply from: rootProject.file("buildscript/gradle/sub_springcloud.gradle")
+apply from: rootProject.file("buildscript/gradle/sub_springjersey.gradle")
