@@ -11,7 +11,6 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
 
 @Configuration
 @EnableTransactionManagement
@@ -30,20 +29,20 @@ public class RestServerPersisConfiguration extends PersistenceConfiguration {
 
   @Primary
   @Bean(name = ID + SQL_SESSION_FACTORY_NAME)
-  public SqlSessionFactoryBean sqlSessionFactoryBean(DataSource dataSource) throws Exception {
-    return super.sqlSessionFactoryBean(dataSource);
+  public SqlSessionFactoryBean sqlSessionFactoryBean(Environment env) throws Exception {
+    return super.sqlSessionFactoryBean(dataSource(env));
   }
 
   @Primary
   @Bean(name = ID + DATASOURCE_NAME)
-  public DataSource dataSource(Environment env) throws SQLException {
+  public DataSource dataSource(Environment env) {
     return super.dataSource(env);
   }
 
   @Primary
   @Bean(name = ID + TRANSACTION_MANAGER_NAME)
-  public DataSourceTransactionManager transactionManager(DataSource dataSource) {
-    return super.transactionManager(dataSource);
+  public DataSourceTransactionManager transactionManager(Environment env) {
+    return super.transactionManager(dataSource(env));
   }
 
   @Primary

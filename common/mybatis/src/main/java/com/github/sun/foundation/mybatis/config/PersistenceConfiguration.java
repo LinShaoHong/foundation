@@ -24,7 +24,7 @@ public abstract class PersistenceConfiguration {
 
   protected abstract String basePackage();
 
-  protected SqlSessionFactoryBean sqlSessionFactoryBean(DataSource dataSource) throws Exception {
+  protected SqlSessionFactoryBean sqlSessionFactoryBean(DataSource dataSource) {
     SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
     factoryBean.setDataSource(dataSource);
     PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
@@ -32,37 +32,41 @@ public abstract class PersistenceConfiguration {
     return factoryBean;
   }
 
-  protected DataSource dataSource(Environment env) throws SQLException {
-    DruidSettings setting = loadSetting(env);
-    DruidDataSource dataSource = new DruidDataSource();
-    dataSource.setUrl(setting.url);
-    dataSource.setUsername(setting.username);
-    dataSource.setPassword(setting.password);
-    dataSource.setFilters(setting.filters);
-    dataSource.setMaxActive(setting.maxActive);
-    dataSource.setInitialSize(setting.initialSize);
-    dataSource.setMinIdle(setting.minIdle);
-    dataSource.setMaxWait(setting.maxWait);
-    dataSource.setTimeBetweenEvictionRunsMillis(setting.timeBetweenEvictionRunsMillis);
-    dataSource.setMinEvictableIdleTimeMillis(setting.minEvictableIdleTimeMillis);
-    dataSource.setValidationQuery(setting.validationQuery);
-    dataSource.setTestWhileIdle(setting.testWhileIdle);
-    dataSource.setTestOnReturn(setting.testOnReturn);
-    dataSource.setTestOnBorrow(setting.testOnBorrow);
-    if (dataSource.getUrl().contains(":mysql:")) {
-      dataSource.setPoolPreparedStatements(false);
-    } else {
-      dataSource.setPoolPreparedStatements(true);
-      dataSource.setMaxPoolPreparedStatementPerConnectionSize(100);
+  protected DataSource dataSource(Environment env) {
+    try {
+      DruidSettings setting = loadSetting(env);
+      DruidDataSource dataSource = new DruidDataSource();
+      dataSource.setUrl(setting.url);
+      dataSource.setUsername(setting.username);
+      dataSource.setPassword(setting.password);
+      dataSource.setFilters(setting.filters);
+      dataSource.setMaxActive(setting.maxActive);
+      dataSource.setInitialSize(setting.initialSize);
+      dataSource.setMinIdle(setting.minIdle);
+      dataSource.setMaxWait(setting.maxWait);
+      dataSource.setTimeBetweenEvictionRunsMillis(setting.timeBetweenEvictionRunsMillis);
+      dataSource.setMinEvictableIdleTimeMillis(setting.minEvictableIdleTimeMillis);
+      dataSource.setValidationQuery(setting.validationQuery);
+      dataSource.setTestWhileIdle(setting.testWhileIdle);
+      dataSource.setTestOnReturn(setting.testOnReturn);
+      dataSource.setTestOnBorrow(setting.testOnBorrow);
+      if (dataSource.getUrl().contains(":mysql:")) {
+        dataSource.setPoolPreparedStatements(false);
+      } else {
+        dataSource.setPoolPreparedStatements(true);
+        dataSource.setMaxPoolPreparedStatementPerConnectionSize(100);
+      }
+      if (setting.helperThreadSize > 0) {
+        ScheduledExecutorService scheduledExecutorService = Executors
+          .newScheduledThreadPool(setting.helperThreadSize);
+        dataSource.setCreateScheduler(scheduledExecutorService);
+        dataSource.setDestroyScheduler(scheduledExecutorService);
+      }
+      dataSource.init();
+      return dataSource;
+    } catch (SQLException ex) {
+      throw new RuntimeException(ex);
     }
-    if (setting.helperThreadSize > 0) {
-      ScheduledExecutorService scheduledExecutorService = Executors
-        .newScheduledThreadPool(setting.helperThreadSize);
-      dataSource.setCreateScheduler(scheduledExecutorService);
-      dataSource.setDestroyScheduler(scheduledExecutorService);
-    }
-    dataSource.init();
-    return dataSource;
   }
 
   protected DataSourceTransactionManager transactionManager(DataSource dataSource) {
