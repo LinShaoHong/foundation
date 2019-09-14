@@ -1,6 +1,13 @@
 dependencies {
   compile project(":$rootName-boot")
-  compile "org.springframework.boot:spring-boot-starter-jersey:$vers.springboot"
+  compile("org.glassfish.jersey.core:jersey-server:$vers.jersey") {
+    exclude group: 'javax.validation', module: 'validation-api'
+  }
+  compile "org.glassfish.jersey.core:jersey-common:$vers.jersey"
+  compile "org.glassfish.jersey.media:jersey-media-multipart:$vers.jersey"
+  compile("org.glassfish.jersey.media:jersey-media-json-jackson:$vers.jersey") {
+    exclude group: 'com.fasterxml.jackson.module', module: 'jackson-module-jaxb-annotations'
+  }
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")
