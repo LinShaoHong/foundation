@@ -1,6 +1,9 @@
 package com.github.sun.foundation.mybatis.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import com.github.sun.foundation.boot.utility.Packages;
+import com.github.sun.foundation.mybatis.CompositeMapper;
+import org.apache.ibatis.annotations.Mapper;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.core.env.Environment;
@@ -20,9 +23,13 @@ public abstract class PersistenceConfiguration {
   protected static final String SQL_SESSION_FACTORY_NAME = "SqlSessionFactoryBean";
   protected static final String SCANNER_NAME = "Scanner";
 
-  protected abstract String id();
+  protected String id() {
+    return null;
+  }
 
-  protected abstract String basePackage();
+  protected String basePackage() {
+    return null;
+  }
 
   protected SqlSessionFactoryBean sqlSessionFactoryBean(DataSource dataSource) {
     SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
@@ -77,13 +84,16 @@ public abstract class PersistenceConfiguration {
 
   protected MapperScannerConfigurer scannerConfigurer(String sqlSessionFactoryName) {
     MapperScannerConfigurer scannerConfigurer = new MapperScannerConfigurer();
-    scannerConfigurer.setBasePackage(basePackage());
+    String basePackage = basePackage() == null ? Packages.group(getClass()) : basePackage();
+    scannerConfigurer.setBasePackage(basePackage);
+    scannerConfigurer.setAnnotationClass(Mapper.class);
+    scannerConfigurer.setMarkerInterface(CompositeMapper.class);
     scannerConfigurer.setSqlSessionFactoryBeanName(sqlSessionFactoryName);
     return scannerConfigurer;
   }
 
   private DruidSettings loadSetting(Environment env) {
-    String prefix = "spring.datasource." + id();
+    String prefix = id() == null ? "spring.datasource" : "spring.datasource." + id();
     Function<String, String> func = field -> prefix + "." + field;
     return new DruidSettings(
       env.getProperty(func.apply("url")),

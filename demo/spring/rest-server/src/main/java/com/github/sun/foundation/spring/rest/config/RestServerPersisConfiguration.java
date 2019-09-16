@@ -15,39 +15,27 @@ import javax.sql.DataSource;
 @Configuration
 @EnableTransactionManagement
 public class RestServerPersisConfiguration extends PersistenceConfiguration {
-  private static final String ID = "restServer";
-
-  @Override
-  protected String id() {
-    return ID;
-  }
-
-  @Override
-  protected String basePackage() {
-    return "com.github.sun.foundation.spring.rest.mapper";
-  }
-
   @Primary
-  @Bean(name = ID + SQL_SESSION_FACTORY_NAME)
+  @Bean(name = SQL_SESSION_FACTORY_NAME)
   public SqlSessionFactoryBean sqlSessionFactoryBean(Environment env) throws Exception {
     return super.sqlSessionFactoryBean(dataSource(env));
   }
 
   @Primary
-  @Bean(name = ID + DATASOURCE_NAME)
+  @Bean(name = DATASOURCE_NAME)
   public DataSource dataSource(Environment env) {
     return super.dataSource(env);
   }
 
   @Primary
-  @Bean(name = ID + TRANSACTION_MANAGER_NAME)
+  @Bean(name = TRANSACTION_MANAGER_NAME)
   public DataSourceTransactionManager transactionManager(Environment env) {
     return super.transactionManager(dataSource(env));
   }
 
   @Primary
-  @Bean(name = ID + SCANNER_NAME)
+  @Bean(name = SCANNER_NAME)
   protected MapperScannerConfigurer scannerConfigurer() {
-    return super.scannerConfigurer(ID + SQL_SESSION_FACTORY_NAME);
+    return super.scannerConfigurer(SQL_SESSION_FACTORY_NAME);
   }
 }
