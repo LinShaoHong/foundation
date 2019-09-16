@@ -4,7 +4,8 @@ import com.github.sun.foundation.boot.utility.SqlFormatter;
 import com.github.sun.foundation.boot.utility.Tuple;
 import com.github.sun.foundation.expression.Expression;
 import com.github.sun.foundation.expression.ExpressionParser;
-import org.immutables.value.Value;
+import lombok.Builder;
+import lombok.Data;
 
 import java.util.*;
 import java.util.function.Function;
@@ -661,32 +662,31 @@ public interface SqlBuilder {
 
     default Map<String, Object> parametersAsMap() {
       Map<String, Object> args = new LinkedHashMap<>();
-      parameters().forEach(v -> args.put(v.name(), v.value()));
+      parameters().forEach(v -> args.put(v.getName(), v.getValue()));
       return args;
     }
   }
 
-  @Value.Immutable
-  @Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE)
-  interface TemplateExpression extends Expression {
-    @Value.Parameter
-    Template template();
+  @Data
+  @Builder
+  class TemplateExpression implements Expression {
+    private Template template;
 
     @Override
-    default int priority() {
+    public int priority() {
       return 20;
     }
 
     @Override
-    default <T> T visit(Visitor<T> visitor) {
+    public <T> T visit(Visitor<T> visitor) {
       if (visitor instanceof SqlBuilder.AbstractVisitor) {
         return ((SqlBuilder.AbstractVisitor<T>) visitor).onTemplateExpression(this);
       }
       return null;
     }
 
-    static TemplateExpression of(SqlBuilder.Template template) {
-      return ImmutableTemplateExpression.of(template);
+    public static TemplateExpression of(SqlBuilder.Template template) {
+      return TemplateExpression.builder().template(template).build();
     }
   }
 

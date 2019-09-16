@@ -1,7 +1,8 @@
 package com.github.sun.foundation.expression;
 
 import com.github.sun.foundation.boot.utility.Tuple;
-import org.immutables.value.Value;
+import lombok.Builder;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,11 +10,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * @Author LinSH
- * @Description: ast
- * @Date: 5:38 PM 2019-02-28
- */
 public interface Expression {
   static Expression id(String name) {
     return Identifier.of(name);
@@ -337,164 +333,149 @@ public interface Expression {
     }
   }
 
-  @Value.Immutable
-  @Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE)
-  interface UnaryExpression extends Expression {
-    @Value.Parameter
-    Expression operand();
-
-    @Value.Parameter
-    Operator operator();
+  @Data
+  @Builder
+  class UnaryExpression implements Expression {
+    private Expression operand;
+    private Operator operator;
 
     @Override
-    default int priority() {
-      return operator().priority;
+    public int priority() {
+      return operator.priority;
     }
 
     @Override
-    default <T> T visit(Visitor<T> visitor) {
+    public <T> T visit(Visitor<T> visitor) {
       return visitor.onUnaryExpression(this);
     }
 
     static Expression of(Expression operand, Operator operator) {
-      return ImmutableUnaryExpression.of(operand, operator);
+      return UnaryExpression.builder().operand(operand).operator(operator).build();
     }
   }
 
-  @Value.Immutable
-  @Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE)
-  interface BinaryExpression extends Expression {
-    @Value.Parameter
-    Expression leftOperand();
-
-    @Value.Parameter
-    Operator operator();
-
-    @Value.Parameter
-    Expression rightOperand();
+  @Data
+  @Builder
+  class BinaryExpression implements Expression {
+    private Expression leftOperand;
+    private Operator operator;
+    private Expression rightOperand;
 
     @Override
-    default int priority() {
-      return operator().priority;
+    public int priority() {
+      return operator.priority;
     }
 
     @Override
-    default <T> T visit(Visitor<T> visitor) {
+    public <T> T visit(Visitor<T> visitor) {
       return visitor.onBinaryExpression(this);
     }
 
     static Expression of(Expression leftOperand, Expression.Operator operator, Expression rightOperand) {
-      return ImmutableBinaryExpression.of(leftOperand, operator, rightOperand);
+      return BinaryExpression.builder()
+        .leftOperand(leftOperand)
+        .operator(operator)
+        .rightOperand(rightOperand)
+        .build();
     }
   }
 
-  @Value.Immutable
-  @Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE)
-  interface MemberAccessExpression extends Expression {
-    @Value.Parameter
-    Expression object();
-
-    @Value.Parameter
-    String member();
+  @Data
+  @Builder
+  class MemberAccessExpression implements Expression {
+    private Expression object;
+    private String member;
 
     @Override
-    default int priority() {
+    public int priority() {
       return 200;
     }
 
     @Override
-    default <T> T visit(Visitor<T> visitor) {
+    public <T> T visit(Visitor<T> visitor) {
       return visitor.onMemberAccessExpression(this);
     }
 
     static Expression of(Expression object, String member) {
-      return ImmutableMemberAccessExpression.of(object, member);
+      return MemberAccessExpression.builder().object(object).member(member).build();
     }
   }
 
-  @Value.Immutable
-  @Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE)
-  interface CallExpression extends Expression {
-    @Value.Parameter
-    Expression function();
-
-    @Value.Parameter
-    List<Expression> parameters();
+  @Data
+  @Builder
+  class CallExpression implements Expression {
+    private Expression function;
+    private List<Expression> parameters;
 
     @Override
-    default int priority() {
+    public int priority() {
       return 200;
     }
 
     @Override
-    default <T> T visit(Visitor<T> visitor) {
+    public <T> T visit(Visitor<T> visitor) {
       return visitor.onCallExpression(this);
     }
 
     static Expression of(Expression function, List<Expression> parameters) {
-      return ImmutableCallExpression.of(function, parameters);
+      return CallExpression.builder().function(function).parameters(parameters).build();
     }
   }
 
-  @Value.Immutable
-  @Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE)
-  interface JsonPathExpression extends Expression {
-    @Value.Parameter
-    Expression object();
-
-    @Value.Parameter
-    String path();
-
-    @Value.Parameter
-    boolean unquoted();
+  @Data
+  @Builder
+  class JsonPathExpression implements Expression {
+    private Expression object;
+    private String path;
+    private boolean unquoted;
 
     @Override
-    default int priority() {
+    public int priority() {
       return 100;
     }
 
     @Override
-    default <T> T visit(Visitor<T> visitor) {
+    public <T> T visit(Visitor<T> visitor) {
       return visitor.onJsonPathExpression(this);
     }
 
-    static JsonPathExpression of(Expression object, String path, boolean unquoted) {
-      return ImmutableJsonPathExpression.of(object, path, unquoted);
+    public static JsonPathExpression of(Expression object, String path, boolean unquoted) {
+      return JsonPathExpression.builder()
+        .object(object)
+        .path(path)
+        .unquoted(unquoted)
+        .build();
     }
   }
 
-  @Value.Immutable
-  @Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE)
-  interface CaseExpression extends Expression {
-    @Value.Parameter
-    List<CaseBranch> branches();
+  @Data
+  @Builder
+  class CaseExpression implements Expression {
+    private List<CaseBranch> branches;
 
     @Override
-    default int priority() {
+    public int priority() {
       return 200;
     }
 
     @Override
-    default <T> T visit(Visitor<T> visitor) {
+    public <T> T visit(Visitor<T> visitor) {
       return visitor.onCaseExpression(this);
     }
 
-    static Expression of(Iterable<? extends Expression.CaseBranch> branches) {
-      return ImmutableCaseExpression.of(branches);
+    static Expression of(List<Expression.CaseBranch> branches) {
+      return CaseExpression.builder().branches(branches).build();
     }
   }
 
-  @Value.Immutable
-  @Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE)
-  interface CaseBranch {
-    @Value.Parameter
-    Expression condition();
-
-    @Value.Parameter
-    Tuple.Tuple2<Expression, Expression> value();
+  @Data
+  @Builder
+  class CaseBranch {
+    private Expression condition;
+    private Tuple.Tuple2<Expression, Expression> value;
 
     static CaseBranch of(Expression condition, Tuple.Tuple2<Expression, Expression> value) {
-      return ImmutableCaseBranch.of(condition, value);
+      return CaseBranch.builder().condition(condition).value(value).build();
     }
   }
 
@@ -579,69 +560,64 @@ public interface Expression {
     }
   }
 
-  @Value.Immutable
-  @Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE)
-  interface Identifier extends Expression {
-    @Value.Parameter
-    String name();
+  @Data
+  @Builder
+  class Identifier implements Expression {
+    private String name;
 
     @Override
-    default int priority() {
+    public int priority() {
       return 200;
     }
 
     @Override
-    default <T> T visit(Visitor<T> visitor) {
+    public <T> T visit(Visitor<T> visitor) {
       return visitor.onIdentifier(this);
     }
 
-    static Identifier of(String name) {
-      return ImmutableIdentifier.of(name);
+    public static Identifier of(String name) {
+      return Identifier.builder().name(name).build();
     }
   }
 
-  @Value.Immutable
-  @Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE)
-  interface Literal extends Expression {
-    @Value.Parameter
-    Object value();
+  @Data
+  @Builder
+  class Literal implements Expression {
+    protected Object value;
 
     @Override
-    default int priority() {
+    public int priority() {
       return 200;
     }
 
     @Override
-    default <T> T visit(Visitor<T> visitor) {
+    public <T> T visit(Visitor<T> visitor) {
       return visitor.onLiteral(this);
     }
 
     static Expression of(Object value) {
-      return value == null ? EMPTY : ImmutableLiteral.of(value);
+      return value == null ? EMPTY : Literal.builder().value(value).build();
     }
   }
 
-  @Value.Immutable
-  @Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE)
-  interface Parameter extends Expression {
-    @Value.Parameter
-    String name();
-
-    @Value.Parameter
-    Object value();
+  @Data
+  @Builder
+  class Parameter implements Expression {
+    private String name;
+    private Object value;
 
     @Override
-    default <A> A visit(Visitor<A> visitor) {
+    public <A> A visit(Visitor<A> visitor) {
       return visitor.onParameter(this);
     }
 
     @Override
-    default int priority() {
+    public int priority() {
       return 200;
     }
 
-    static Parameter of(String name, Object value) {
-      return ImmutableParameter.of(name, value);
+    public static Parameter of(String name, Object value) {
+      return Parameter.builder().name(name).value(value).build();
     }
   }
 

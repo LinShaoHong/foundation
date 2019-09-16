@@ -348,13 +348,13 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
     Expression e = expr;
     while (true) {
       if (e instanceof Identifier) {
-        members.add(((Identifier) e).name());
+        members.add(((Identifier) e).getName());
         break;
       }
       if (e instanceof MemberAccessExpression) {
         MemberAccessExpression mae = (MemberAccessExpression) e;
-        e = mae.object();
-        members.add(mae.member());
+        e = mae.getObject();
+        members.add(mae.getMember());
       } else {
         throw new IllegalArgumentException();
       }
@@ -394,7 +394,7 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
 
     @Override
     public Void onUnaryExpression(UnaryExpression expr) {
-      Operator op = expr.operator();
+      Operator op = expr.getOperator();
       switch (op) {
         case NOT:
           sb.append(" NOT ");
@@ -402,16 +402,16 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
         default:
           throw new IllegalArgumentException();
       }
-      Expression operand = expr.operand();
+      Expression operand = expr.getOperand();
       buildWithParenthesis(operand, op.priority > operand.priority());
       return null;
     }
 
     @Override
     public Void onBinaryExpression(BinaryExpression expr) {
-      Operator op = expr.operator();
-      Expression leftOperand = expr.leftOperand();
-      Expression rightOperand = expr.rightOperand();
+      Operator op = expr.getOperator();
+      Expression leftOperand = expr.getLeftOperand();
+      Expression rightOperand = expr.getRightOperand();
       buildWithParenthesis(leftOperand, op.priority > leftOperand.priority());
       switch (op) {
         case PLUS:
@@ -531,13 +531,13 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
     @Override
     protected Void onFuncExpression(Expression func, List<Expression> parameters) {
       if (func instanceof Identifier) {
-        String value = ((Identifier) func).name();
+        String value = ((Identifier) func).getName();
         checkName(value);
         sb.append(value);
       } else if (func instanceof MemberAccessExpression) {
         MemberAccessExpression mae = (MemberAccessExpression) func;
-        Expression object = mae.object();
-        String member = mae.member();
+        Expression object = mae.getObject();
+        String member = mae.getMember();
         checkName(member);
         object.visit(this);
         sb.append(".").append(member);
@@ -552,17 +552,17 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
 
     @Override
     public Void onJsonPathExpression(JsonPathExpression expr) {
-      expr.object().visit(this);
-      sb.append(expr.unquoted() ? "->>'" : "->'");
-      escape(sb, context.model.column(expr.path()));
+      expr.getObject().visit(this);
+      sb.append(expr.isUnquoted() ? "->>'" : "->'");
+      escape(sb, context.model.column(expr.getPath()));
       sb.append("'");
       return null;
     }
 
     @Override
     public Void onCaseExpression(CaseExpression expr) {
-      List<CaseBranch> branches = expr.branches();
-      Expression expression = branches.get(0).condition();
+      List<CaseBranch> branches = expr.getBranches();
+      Expression expression = branches.get(0).getCondition();
       if (expression != Expression.EMPTY) {
         sb.append("(CASE ");
         expression.visit(this);
@@ -571,8 +571,8 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
       }
       branches.subList(1, branches.size())
         .forEach(branch -> {
-          Expression condition = branch.condition();
-          Tuple.Tuple2<Expression, Expression> value = branch.value();
+          Expression condition = branch.getCondition();
+          Tuple.Tuple2<Expression, Expression> value = branch.getValue();
           if (condition == Expression.EMPTY) {
             if (value._2 != Expression.EMPTY) {
               sb.append(" ELSE ");
@@ -647,7 +647,7 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
 
     @Override
     public Void onIdentifier(Identifier expr) {
-      String name = expr.name();
+      String name = expr.getName();
       if (context.property == null) {
         context.model = mainModel;
         context.property = mainModel.findProperty(name);
@@ -674,7 +674,7 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
 
     @Override
     public Void onLiteral(Literal expr) {
-      sb.append(context.property, expr.value());
+      sb.append(context.property, expr.getValue());
       return null;
     }
 

@@ -148,7 +148,7 @@ public class ConnectionManager {
         ps.setFetchSize(fetchSize);
         List<Expression.Parameter> params = template.parameters();
         for (int i = 1; i <= params.size(); i++) {
-          ps.setObject(i, params.get(i - 1).value());
+          ps.setObject(i, params.get(i - 1).getValue());
         }
         ResultSet rs = ps.executeQuery();
         return func.apply(rs);
@@ -205,7 +205,7 @@ public class ConnectionManager {
       try (PreparedStatement ps = conn.prepareStatement(template.placeholderSQL())) {
         List<Expression.Parameter> params = template.parameters();
         for (int i = 1; i <= params.size(); i++) {
-          ps.setObject(i, params.get(i - 1).value());
+          ps.setObject(i, params.get(i - 1).getValue());
         }
         return ps.execute();
       } catch (SQLException ex) {

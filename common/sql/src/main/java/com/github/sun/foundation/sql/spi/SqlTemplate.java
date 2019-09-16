@@ -27,7 +27,7 @@ public class SqlTemplate implements SqlBuilder.Template {
 
   @Override
   public String parameterizedSQL() {
-    return buildSQL((sb, param) -> append(sb, param.name()),
+    return buildSQL((sb, param) -> append(sb, param.getName()),
       (sb, template) -> append(sb, template.parameterizedSQL()));
   }
 
@@ -39,7 +39,7 @@ public class SqlTemplate implements SqlBuilder.Template {
 
   @Override
   public String literalSQL() {
-    return buildSQL((sb, param) -> reformatLiteral(sb, param.value()),
+    return buildSQL((sb, param) -> reformatLiteral(sb, param.getValue()),
       (sb, template) -> append(sb, template.literalSQL()));
   }
 
@@ -57,7 +57,7 @@ public class SqlTemplate implements SqlBuilder.Template {
     expressions.forEach(e -> e.visit(new SqlBuilder.AbstractVisitor<Void>() {
       @Override
       public Void onLiteral(Expression.Literal expr) {
-        sb.append(expr.value());
+        sb.append(expr.getValue());
         return null;
       }
 
@@ -69,7 +69,7 @@ public class SqlTemplate implements SqlBuilder.Template {
 
       @Override
       public Void onTemplateExpression(SqlBuilder.TemplateExpression expr) {
-        templateFunc.accept(sb, expr.template());
+        templateFunc.accept(sb, expr.getTemplate());
         return null;
       }
     }));
@@ -83,7 +83,7 @@ public class SqlTemplate implements SqlBuilder.Template {
       expressions.forEach(e -> e.visit(new SqlBuilder.AbstractVisitor<Void>() {
         @Override
         public Void onParameter(Expression.Parameter expr) {
-          String name = expr.name();
+          String name = expr.getName();
           // support mybatis
           int i = name.indexOf(", typeHandler=");
           if (i > 0) {
@@ -91,13 +91,13 @@ public class SqlTemplate implements SqlBuilder.Template {
           } else {
             name = name.substring(2, name.length() - 1);
           }
-          parameters.add(Expression.Parameter.of(name, expr.value()));
+          parameters.add(Expression.Parameter.of(name, expr.getValue()));
           return null;
         }
 
         @Override
         public Void onTemplateExpression(SqlBuilder.TemplateExpression expr) {
-          parameters.addAll(expr.template().parameters());
+          parameters.addAll(expr.getTemplate().parameters());
           return null;
         }
       }));

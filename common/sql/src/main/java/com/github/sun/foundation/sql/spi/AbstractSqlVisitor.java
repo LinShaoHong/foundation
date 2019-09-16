@@ -8,10 +8,6 @@ import com.github.sun.foundation.sql.SqlBuilder;
 
 import java.util.List;
 
-/**
- * @Author LinSH
- * @Date: 10:36 AM 2019-03-01
- */
 public abstract class AbstractSqlVisitor<T> extends SqlBuilder.AbstractVisitor<T> {
   protected abstract T onIsNullExpression(Expression value);
 
@@ -37,15 +33,15 @@ public abstract class AbstractSqlVisitor<T> extends SqlBuilder.AbstractVisitor<T
 
   @Override
   public T onCallExpression(CallExpression expr) {
-    Expression function = expr.function();
-    List<Expression> parameters = expr.parameters();
+    Expression function = expr.getFunction();
+    List<Expression> parameters = expr.getParameters();
     if (function instanceof MemberAccessExpression) {
       MemberAccessExpression ma = (MemberAccessExpression) function;
-      switch (ma.member()) {
+      switch (ma.getMember()) {
         case "in":
-          return onInExpression(ma.object(), parameters, true);
+          return onInExpression(ma.getObject(), parameters, true);
         case "notIn":
-          return onInExpression(ma.object(), parameters, false);
+          return onInExpression(ma.getObject(), parameters, false);
         case "cast":
           if (parameters.size() != 1) {
             throw new IllegalArgumentException("cast function dose not has only one parameter");
@@ -53,7 +49,7 @@ public abstract class AbstractSqlVisitor<T> extends SqlBuilder.AbstractVisitor<T
           if (!(parameters.get(0) instanceof Literal)) {
             throw new IllegalArgumentException("parameter of cast function must be a Literal");
           }
-          return onCastExpression(ma.object(), ((Literal) parameters.get(0)).value().toString());
+          return onCastExpression(ma.getObject(), ((Literal) parameters.get(0)).getValue().toString());
         case "over":
           if (parameters.size() != 1) {
             throw new IllegalArgumentException("over function dose not has only one parameter");
@@ -61,33 +57,33 @@ public abstract class AbstractSqlVisitor<T> extends SqlBuilder.AbstractVisitor<T
           if (!(parameters.get(0) instanceof Expression.Identifier)) {
             throw new IllegalArgumentException("parameter of over function must be a Identifier");
           }
-          return onOverExpression(ma.object(), ((Expression.Identifier) parameters.get(0)).name());
+          return onOverExpression(ma.getObject(), ((Expression.Identifier) parameters.get(0)).getName());
         case "between":
           if (parameters.size() != 2) {
             throw new IllegalArgumentException("between function dose not has only two parameter");
           }
-          return onBetweenExpression(ma.object(), parameters.get(0), parameters.get(1));
+          return onBetweenExpression(ma.getObject(), parameters.get(0), parameters.get(1));
         case "isNull":
           if (!parameters.isEmpty()) {
             throw new IllegalArgumentException("isNull function has more than zero parameter");
           }
-          return onIsNullExpression(ma.object());
+          return onIsNullExpression(ma.getObject());
         case "isNotNull":
           if (!parameters.isEmpty()) {
             throw new IllegalArgumentException("isNotNull function has more than zero parameter");
           }
-          return onIsNotNullExpression(ma.object());
+          return onIsNotNullExpression(ma.getObject());
         case "distinct":
           if (!parameters.isEmpty()) {
             throw new IllegalArgumentException("distinct function has more than zero parameter");
           }
-          return onDistinctExpression(ma.object());
+          return onDistinctExpression(ma.getObject());
         case "contains":
-          return onLikeExpression(ma.object(), parameters.get(0), LikeModel.CONTAINS);
+          return onLikeExpression(ma.getObject(), parameters.get(0), LikeModel.CONTAINS);
         case "endsWith":
-          return onLikeExpression(ma.object(), parameters.get(0), LikeModel.ENDS_WITH);
+          return onLikeExpression(ma.getObject(), parameters.get(0), LikeModel.ENDS_WITH);
         case "startsWith":
-          return onLikeExpression(ma.object(), parameters.get(0), LikeModel.STARTS_WITH);
+          return onLikeExpression(ma.getObject(), parameters.get(0), LikeModel.STARTS_WITH);
       }
     }
     return onFuncExpression(function, parameters);
