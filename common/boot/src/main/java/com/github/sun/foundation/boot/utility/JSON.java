@@ -6,26 +6,25 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.MissingNode;
+import lombok.experimental.UtilityClass;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@UtilityClass
 public class JSON {
-  private static final ObjectMapper mapper = new ObjectMapper();
+  private final ObjectMapper mapper = new ObjectMapper();
 
-  private JSON() {
-  }
-
-  public static ObjectMapper getMapper() {
+  public ObjectMapper getMapper() {
     return mapper;
   }
 
   /**
    * 序列化
    */
-  public static String serialize(Object obj) {
+  public String serialize(Object obj) {
     try {
       return mapper.writeValueAsString(obj);
     } catch (JsonProcessingException ex) {
@@ -33,7 +32,7 @@ public class JSON {
     }
   }
 
-  public static byte[] serializeAsByte(Object object) {
+  public byte[] serializeAsByte(Object object) {
     try {
       return mapper.writeValueAsBytes(object);
     } catch (JsonProcessingException ex) {
@@ -41,11 +40,11 @@ public class JSON {
     }
   }
 
-  public static JsonNode asJsonNode(Object obj) {
+  public JsonNode asJsonNode(Object obj) {
     return mapper.valueToTree(obj);
   }
 
-  public static JsonNode asJsonNode(String json) {
+  public JsonNode asJsonNode(String json) {
     try {
       return mapper.readTree(json);
     } catch (IOException ex) {
@@ -56,7 +55,7 @@ public class JSON {
   /**
    * 反序列化
    */
-  public static <T> T deserialize(String json, Class<T> clazz) {
+  public <T> T deserialize(String json, Class<T> clazz) {
     try {
       return mapper.readValue(json, clazz);
     } catch (IOException ex) {
@@ -64,7 +63,7 @@ public class JSON {
     }
   }
 
-  public static <T> T deserialize(byte[] bytes, Class<T> clazz) {
+  public <T> T deserialize(byte[] bytes, Class<T> clazz) {
     try {
       return mapper.readValue(bytes, clazz);
     } catch (IOException ex) {
@@ -72,7 +71,7 @@ public class JSON {
     }
   }
 
-  public static <T> T deserialize(Object object, Class<T> clazz) {
+  public <T> T deserialize(Object object, Class<T> clazz) {
     try {
       return mapper.convertValue(object, clazz);
     } catch (Exception ex) {
@@ -80,7 +79,7 @@ public class JSON {
     }
   }
 
-  public static <T> List<T> deserializeAsList(String json, Class<T> clazz) {
+  public <T> List<T> deserializeAsList(String json, Class<T> clazz) {
     JavaType type = mapper.getTypeFactory().constructParametricType(List.class, clazz);
     try {
       return mapper.readValue(json, type);
@@ -89,12 +88,12 @@ public class JSON {
     }
   }
 
-  public static <T> List<T> deserializeAsList(Object object, Class<T> clazz) {
+  public <T> List<T> deserializeAsList(Object object, Class<T> clazz) {
     JavaType type = mapper.getTypeFactory().constructParametricType(List.class, clazz);
     return mapper.convertValue(object, type);
   }
 
-  public static <T> Set<T> deserializeAsSet(String json, Class<T> clazz) {
+  public <T> Set<T> deserializeAsSet(String json, Class<T> clazz) {
     JavaType type = mapper.getTypeFactory().constructParametricType(Set.class, clazz);
     try {
       return mapper.readValue(json, type);
@@ -103,13 +102,13 @@ public class JSON {
     }
   }
 
-  public static <T> Set<T> deserializeAsSet(Object object, Class<T> clazz) {
+  public <T> Set<T> deserializeAsSet(Object object, Class<T> clazz) {
     JavaType type = mapper.getTypeFactory().constructParametricType(Set.class, clazz);
     return mapper.convertValue(object, type);
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> T[] deserializeAsArray(String json, Class<T> clazz) {
+  public <T> T[] deserializeAsArray(String json, Class<T> clazz) {
     try {
       Class<T[]> arrayClass = (Class<T[]>) Class.forName("[L" + clazz.getName() + ";");
       return mapper.readValue(json, arrayClass);
@@ -119,7 +118,7 @@ public class JSON {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> T[] deserializeAsArray(Object object, Class<T> clazz) {
+  public <T> T[] deserializeAsArray(Object object, Class<T> clazz) {
     try {
       Class<T[]> arrayClass = (Class<T[]>) Class.forName("[L" + clazz.getName() + ";");
       return mapper.convertValue(object, arrayClass);
@@ -128,7 +127,7 @@ public class JSON {
     }
   }
 
-  public static <A, B> Map<A, B> deserializeAsMap(String json, Class<B> valueClass, Function<String, A> keyProvider) {
+  public <A, B> Map<A, B> deserializeAsMap(String json, Class<B> valueClass, Function<String, A> keyProvider) {
     if (json == null) {
       return Collections.emptyMap();
     }
@@ -142,19 +141,19 @@ public class JSON {
     }
   }
 
-  public static <B> Map<String, B> deserializeAsMap(String json, Class<B> valueClass) {
+  public <B> Map<String, B> deserializeAsMap(String json, Class<B> valueClass) {
     return deserializeAsMap(json, valueClass, v -> v);
   }
 
-  public static <B> Map<String, B> deserializeAsMap(JsonNode node, Class<B> valueClass) {
+  public <B> Map<String, B> deserializeAsMap(JsonNode node, Class<B> valueClass) {
     return deserializeAsMap(node.toString(), valueClass, v -> v);
   }
 
-  public static Valuer newValuer(JsonNode node, String... path) {
+  public Valuer newValuer(JsonNode node, String... path) {
     return Valuer.of(node, path);
   }
 
-  public static class Valuer {
+  public class Valuer {
     private final JsonNode node;
     private final Path path;
 

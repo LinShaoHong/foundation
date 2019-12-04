@@ -1,5 +1,7 @@
 package com.github.sun.foundation.boot.utility;
 
+import lombok.experimental.UtilityClass;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -10,6 +12,7 @@ import java.util.stream.Collectors;
  * @Author LinSH
  * @Date: 3:46 PM 2019-03-02
  */
+@UtilityClass
 public class TypeInfo {
   /**
    * 构造一个参数化的类型
@@ -18,7 +21,7 @@ public class TypeInfo {
    * @param args    范型参数列表
    * @return 参数化的类型
    */
-  public static ParameterizedType makeGenericType(Class<?> rawType, Type... args) {
+  public ParameterizedType makeGenericType(Class<?> rawType, Type... args) {
     return new ParameterizedType() {
       @Override
       public Type[] getActualTypeArguments() {
@@ -61,11 +64,11 @@ public class TypeInfo {
    * @param baseClass 基类
    * @return 基类的范型参数
    */
-  public static List<Type> getTypeParameters(Type type, Class<?> baseClass) {
+  public List<Type> getTypeParameters(Type type, Class<?> baseClass) {
     return new TypeParametersFinder().find(type, baseClass);
   }
 
-  private static class TypeParametersFinder {
+  private class TypeParametersFinder {
     private Class<?> c;
     private ParameterizedType pt;
     private Map<String, Type> typeArguments = new HashMap<>();

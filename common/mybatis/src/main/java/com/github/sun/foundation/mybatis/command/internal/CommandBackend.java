@@ -3,8 +3,8 @@ package com.github.sun.foundation.mybatis.command.internal;
 import com.github.sun.foundation.boot.utility.Iterators;
 import com.github.sun.foundation.boot.utility.Tuple;
 import com.github.sun.foundation.expression.Expression;
+import com.github.sun.foundation.modelling.Model;
 import com.github.sun.foundation.mybatis.command.CommandRunner;
-import com.github.sun.foundation.sql.Model;
 import com.github.sun.foundation.sql.SqlBuilder;
 
 import java.util.Collection;
@@ -54,13 +54,7 @@ public class CommandBackend<V> implements CommandRunner<V> {
 
     SqlBuilder sb = factory.create();
     return sb.from(clazz)
-      .where(pks, pk -> {
-        List<Object> pkValues = arr.stream()
-          .map(pk::getValue)
-          .distinct()
-          .collect(Collectors.toList());
-        return pkValues.size() > 1 ? sb.field(pk.name()).in(pkValues) : sb.field(pk.name()).eq(pkValues.get(0));
-      })
+      .where(buildCondition(arr, pks))
       .update()
       .set(updateProperties, p -> {
         if (arr.size() == 1) {
@@ -94,12 +88,28 @@ public class CommandBackend<V> implements CommandRunner<V> {
     }
     SqlBuilder sb = factory.create();
     return sb.from(clazz)
-      .where(pks, pk -> {
-        List<Object> pkValues = arr.stream()
-          .map(pk::getValue)
-          .distinct()
-          .collect(Collectors.toList());
-        return pkValues.size() > 1 ? sb.field(pk.name()).in(pkValues) : sb.field(pk.name()).eq(pkValues.get(0));
-      }).delete().template();
+      .where(buildCondition(arr, pks))
+      .delete()
+      .template();
+  }
+
+  private Expression buildCondition(Collection<V> arr, List<Model.Property> pks) {
+    if (pks.size() == 1) {
+      Model.Property pk = pks.get(0);
+      List<Object> values = arr.stream()
+        .map(pk::getValue)
+        .distinct()
+        .collect(Collectors.toList());
+      return Expression.id(pk.name()).in(values);
+    }
+    Expression conn = Expression.EMPTY;
+    for (V v : arr) {
+      Expression e = Expression.EMPTY;
+      for (Model.Property pk : pks) {
+        e = e.and(Expression.id(pk.name()).eq(pk.getValue(v)));
+      }
+      conn = conn.or(e);
+    }
+    return conn;
   }
 }

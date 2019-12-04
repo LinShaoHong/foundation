@@ -1,9 +1,9 @@
 package com.github.sun.foundation.spring.rest.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.sun.foundation.mybatis.handler.JsonHandler;
-import com.github.sun.foundation.sql.Handler;
-import com.github.sun.foundation.sql.NamingStrategy;
+import com.github.sun.foundation.modelling.JsonHandler;
+import com.github.sun.foundation.modelling.Converter;
+import com.github.sun.foundation.modelling.NamingStrategy;
 import lombok.Data;
 
 import javax.persistence.Table;
@@ -21,14 +21,14 @@ public class Entity {
   private String id;
   private String name;
   private String address;
-  @Handler(JsonHandler.ListJsonNodeHandler.class)
+  @Converter(JsonHandler.ListJsonNodeHandler.class)
   private List<JsonNode> logs;
-  @Handler(JsonHandler.JsonNodeHandler.class)
+  @Converter(JsonHandler.JsonNodeHandler.class)
   private JsonNode form;
-  @Handler(JsonHandler.JsonNodeHandler.class)
+  @Converter(JsonHandler.JsonNodeHandler.class)
   private JsonNode log;
   private Map<String, Object> map;
-  @Handler(JsonHandler.ArrayJsonNodeHandler.class)
+  @Converter(JsonHandler.ArrayJsonNodeHandler.class)
   private JsonNode[] arr;
   private Type type;
 }

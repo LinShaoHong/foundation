@@ -1,9 +1,9 @@
 dependencies {
+  compile project(":$rootName-modelling")
   compile project(":$rootName-expression")
   compile "com.alibaba:druid:$vers.druid"
   compile "mysql:mysql-connector-java:$vers.mysql"
   compile "org.postgresql:postgresql:$vers.postgresql"
-  compile "javax.persistence:persistence-api:$vers.jax_persistence"
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")

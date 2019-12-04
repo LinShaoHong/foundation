@@ -1,19 +1,11 @@
-package com.github.sun.foundation.mybatis.handler;
+package com.github.sun.foundation.modelling;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.sun.foundation.boot.utility.JSON;
-import com.github.sun.foundation.sql.DBType;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-import org.postgresql.util.PGobject;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.sql.CallableStatement;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +13,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 @SuppressWarnings("unchecked")
-public abstract class JsonHandler<T> extends BaseTypeHandler<T> {
+public abstract class JsonHandler<T> implements Converter.Handler<T, String> {
   private final Class<T> clazz;
 
   public JsonHandler() {
@@ -30,71 +22,11 @@ public abstract class JsonHandler<T> extends BaseTypeHandler<T> {
   }
 
   @Override
-  public void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException {
-    switch (DBType.get()) {
-      case PG:
-        PGobject value = new PGobject();
-        value.setType("jsonb");
-        value.setValue(serialize(parameter));
-        ps.setObject(i, value);
-        break;
-      case MYSQL:
-        ps.setObject(i, serialize(parameter));
-        break;
-      default:
-        throw new IllegalArgumentException("Unknown db type: '" + DBType.get() + "'");
-    }
-  }
-
-  @Override
-  @SuppressWarnings("Duplicates")
-  public T getNullableResult(ResultSet rs, String columnName) throws SQLException {
-    switch (DBType.get()) {
-      case PG:
-        PGobject value = (PGobject) rs.getObject(columnName);
-        return deserialize(value == null ? null : value.getValue());
-      case MYSQL:
-        Object obj = rs.getObject(columnName);
-        return deserialize((String) obj);
-      default:
-        throw new IllegalArgumentException("Unknown db type: '" + DBType.get() + "'");
-    }
-  }
-
-  @Override
-  @SuppressWarnings("Duplicates")
-  public T getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-    switch (DBType.get()) {
-      case PG:
-        PGobject value = (PGobject) rs.getObject(columnIndex);
-        return deserialize(value == null ? null : value.getValue());
-      case MYSQL:
-        Object obj = rs.getObject(columnIndex);
-        return deserialize((String) obj);
-      default:
-        throw new IllegalArgumentException("Unknown db type: '" + DBType.get() + "'");
-    }
-  }
-
-  @Override
-  @SuppressWarnings("Duplicates")
-  public T getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-    switch (DBType.get()) {
-      case PG:
-        PGobject value = (PGobject) cs.getObject(columnIndex);
-        return deserialize(value == null ? null : value.getValue());
-      case MYSQL:
-        Object obj = cs.getObject(columnIndex);
-        return deserialize((String) obj);
-      default:
-        throw new IllegalArgumentException("Unknown db type: '" + DBType.get() + "'");
-    }
-  }
-
   public String serialize(T value) {
     return JSON.serialize(value);
   }
 
+  @Override
   public T deserialize(String value) {
     return value == null ? null : JSON.deserialize(value, clazz);
   }

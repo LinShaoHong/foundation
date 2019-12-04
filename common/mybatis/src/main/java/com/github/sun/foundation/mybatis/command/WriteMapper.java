@@ -1,8 +1,8 @@
 package com.github.sun.foundation.mybatis.command;
 
+import com.github.sun.foundation.modelling.Model;
 import com.github.sun.foundation.mybatis.command.internal.CommandBackend;
 import com.github.sun.foundation.sql.DBType;
-import com.github.sun.foundation.sql.Model;
 import com.github.sun.foundation.sql.SqlBuilder;
 import com.github.sun.foundation.sql.factory.SqlBuilderFactory;
 import org.apache.ibatis.annotations.DeleteProvider;
@@ -16,32 +16,32 @@ import java.util.List;
 import java.util.Map;
 
 public interface WriteMapper<T> {
-  @InsertProvider(type = WriteSqlProvider.class, method = "insertAll")
+  @InsertProvider(type = Provider.class, method = "insertAll")
   int insertAll(@Param("values") List<T> values);
 
-  @InsertProvider(type = WriteSqlProvider.class, method = "insert")
+  @InsertProvider(type = Provider.class, method = "insert")
   int insert(@Param("value") T value);
 
-  @UpdateProvider(type = WriteSqlProvider.class, method = "updateAll")
+  @UpdateProvider(type = Provider.class, method = "updateAll")
   int updateAll(@Param("values") List<T> values);
 
-  @UpdateProvider(type = WriteSqlProvider.class, method = "update")
+  @UpdateProvider(type = Provider.class, method = "update")
   int update(@Param("value") T value);
 
-  @DeleteProvider(type = WriteSqlProvider.class, method = "deleteAll")
+  @DeleteProvider(type = Provider.class, method = "deleteAll")
   int deleteAll(@Param("values") List<T> values);
 
-  @DeleteProvider(type = WriteSqlProvider.class, method = "delete")
+  @DeleteProvider(type = Provider.class, method = "delete")
   int delete(@Param("value") T value);
 
-  @DeleteProvider(type = WriteSqlProvider.class, method = "deleteById")
+  @DeleteProvider(type = Provider.class, method = "deleteById")
   int deleteById(@Param("id") Serializable id);
 
-  @DeleteProvider(type = WriteSqlProvider.class, method = "deleteByIds")
+  @DeleteProvider(type = Provider.class, method = "deleteByIds")
   int deleteByIds(@Param("ids") List<Serializable> ids);
 
   @SuppressWarnings("unchecked")
-  class WriteSqlProvider {
+  class Provider {
 
     public String insertAll(Map<String, Object> params) {
       List<Object> values = (List<Object>) params.get("values");

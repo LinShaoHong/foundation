@@ -5,7 +5,7 @@ import com.github.sun.foundation.boot.utility.Cache;
 import com.github.sun.foundation.boot.utility.Tuple;
 import com.github.sun.foundation.expression.Expression;
 import com.github.sun.foundation.sql.JoinMode;
-import com.github.sun.foundation.sql.Model;
+import com.github.sun.foundation.modelling.Model;
 import com.github.sun.foundation.sql.OrderMode;
 import com.github.sun.foundation.sql.SqlBuilder;
 

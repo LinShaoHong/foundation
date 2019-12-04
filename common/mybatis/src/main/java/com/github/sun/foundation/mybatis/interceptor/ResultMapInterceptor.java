@@ -1,11 +1,15 @@
 package com.github.sun.foundation.mybatis.interceptor;
 
+import com.github.sun.foundation.boot.Scanner;
 import com.github.sun.foundation.boot.utility.Cache;
 import com.github.sun.foundation.boot.utility.Strings;
 import com.github.sun.foundation.boot.utility.TypeInfo;
-import com.github.sun.foundation.mybatis.handler.JsonHandler;
+import com.github.sun.foundation.modelling.Converter;
+import com.github.sun.foundation.modelling.JsonHandler;
+import com.github.sun.foundation.modelling.Model;
+import com.github.sun.foundation.mybatis.interceptor.utility.ParameterParser;
+import com.github.sun.foundation.mybatis.interceptor.utility.TypeHandlerParser;
 import com.github.sun.foundation.sql.DBType;
-import com.github.sun.foundation.sql.Model;
 import org.apache.ibatis.executor.BaseExecutor;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -30,13 +34,14 @@ import java.util.stream.Stream;
 
 @Intercepts({
   @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
+  @Signature(type = Executor.class, method = "queryCursor", args = {MappedStatement.class, Object.class, RowBounds.class}),
   @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class})})
+@SuppressWarnings("unchecked")
 public class ResultMapInterceptor extends BasicInterceptor {
   private static final Cache<String, ResultMap> resultMapCache = new Cache<>();
   private static final Cache<Class<?>, Class<?>> entityClassCache = new Cache<>();
 
   @Override
-  @SuppressWarnings("unchecked")
   public Object intercept(Invocation invocation) throws Throwable {
     try {
       Object target = invocation.getTarget();
@@ -62,6 +67,7 @@ public class ResultMapInterceptor extends BasicInterceptor {
             DBType.set(dbType);
             ((Map) arg).put("$DBType", dbType.name());
             ((Map) arg).put("$RESULT_TYPE", entityClass);
+            ParameterParser.parse(method, ((Map) arg));
           }
           setResultMaps(ms, entityClass, method);
         }
@@ -82,25 +88,25 @@ public class ResultMapInterceptor extends BasicInterceptor {
       }
       ResultMap resultMap = resultMapCache.get(ms.getId(), () -> buildResultMap(ms.getConfiguration(), model, null));
       if (resultMap != null) {
-        MetaObject metaMappedStatement = getMetaObject(ms);
-        metaMappedStatement.setValue("resultMaps", Collections.singletonList(resultMap));
+        MetaObject meta = getMetaObject(ms);
+        meta.setValue("resultMaps", Collections.singletonList(resultMap));
       }
     }
   }
 
-  private ResultMap buildResultMap(Configuration configuration, Model model, String selectAliasPrefix) {
+  private ResultMap buildResultMap(Configuration configuration, Model model, String columnPrefix) {
     List<ResultMapping> mappings = model.properties()
       .stream()
-      .map(property -> buildResultMapping(configuration, model, property, selectAliasPrefix))
+      .map(property -> buildResultMapping(configuration, model, property, columnPrefix))
       .collect(Collectors.toList());
-    return new ResultMap.Builder(configuration, makeResultMapId(model, selectAliasPrefix), model.rawClass(), mappings).build();
+    return new ResultMap.Builder(configuration, makeResultMapId(model, columnPrefix), model.rawClass(), mappings).build();
   }
 
-  private String makeResultMapId(Model model, String selectAliasPrefix) {
-    return selectAliasPrefix == null ? model.name() : model.name() + ":" + selectAliasPrefix;
+  private String makeResultMapId(Model model, String columnPrefix) {
+    return columnPrefix == null ? model.name() : model.name() + ":" + columnPrefix;
   }
 
-  private ResultMapping buildResultMapping(Configuration configuration, Model model, Model.Property property, String selectAliasPrefix) {
+  private ResultMapping buildResultMapping(Configuration configuration, Model model, Model.Property property, String columnPrefix) {
     Class<?> typeHandler = property.typeHandler();
     String nestedResultMapId = null;
     if (typeHandler == null) {
@@ -108,24 +114,35 @@ public class ResultMapInterceptor extends BasicInterceptor {
       if (fieldModel != null && Map.class.isAssignableFrom(fieldModel.rawClass())) {
         typeHandler = JsonHandler.GenericMapHandler.class;
       } else if (fieldModel != null && fieldModel.hasProperty()) {
-        nestedResultMapId = getNestedResultMapId(configuration, fieldModel, property.selectAliasPrefix());
+        nestedResultMapId = getNestedResultMapId(configuration, fieldModel, property.columnPrefix());
       }
     }
     String name = property.name();
-    String column = model.column(selectAliasPrefix == null ? name : Strings.joinCamelCase(selectAliasPrefix, name));
-    try {
-      return new ResultMapping.Builder(configuration, name, column, property.field().getType())
-        .nestedResultMapId(nestedResultMapId)
-        .typeHandler(typeHandler == null ? null : (TypeHandler<?>) typeHandler.newInstance())
-        .build();
-    } catch (InstantiationException | IllegalAccessException ex) {
-      throw new RuntimeException(ex);
-    }
+    String column = model.column(columnPrefix == null ? name : Strings.joinCamelCase(columnPrefix, name));
+    return new ResultMapping.Builder(configuration, name, column, property.field().getType())
+      .nestedResultMapId(nestedResultMapId)
+      .typeHandler(typeHandler == null ? null : getTypeHandler((Class<? extends Converter.Handler>) typeHandler))
+      .build();
   }
 
-  private String getNestedResultMapId(Configuration configuration, Model fieldModel, String selectAliasPrefix) {
-    ResultMap resultMap = resultMapCache.get(makeResultMapId(fieldModel, selectAliasPrefix), () -> {
-      ResultMap rm = buildResultMap(configuration, fieldModel, selectAliasPrefix);
+  private TypeHandler<?> getTypeHandler(Class<? extends Converter.Handler> handlerClass) {
+    List<Class<?>> handlers = Scanner.getClassesWithInterface(Converter.Parser.class)
+      .stream()
+      .map(v -> v.getInstance().parse(handlerClass))
+      .collect(Collectors.toList());
+    if (!handlers.isEmpty()) {
+      try {
+        return (TypeHandler<?>) handlers.get(0).newInstance();
+      } catch (InstantiationException | IllegalAccessException ex) {
+        throw new RuntimeException(ex);
+      }
+    }
+    return null;
+  }
+
+  private String getNestedResultMapId(Configuration configuration, Model fieldModel, String columnPrefix) {
+    ResultMap resultMap = resultMapCache.get(makeResultMapId(fieldModel, columnPrefix), () -> {
+      ResultMap rm = buildResultMap(configuration, fieldModel, columnPrefix);
       if (rm != null) {
         configuration.addResultMap(rm);
       }

@@ -1,4 +1,4 @@
-package com.github.sun.foundation.sql;
+package com.github.sun.foundation.modelling;
 
 import java.lang.annotation.*;
 

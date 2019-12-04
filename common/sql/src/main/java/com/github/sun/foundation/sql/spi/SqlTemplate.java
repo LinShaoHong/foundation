@@ -1,7 +1,9 @@
 package com.github.sun.foundation.sql.spi;
 
+import com.github.sun.foundation.boot.Scanner;
 import com.github.sun.foundation.expression.Expression;
-import com.github.sun.foundation.sql.Model;
+import com.github.sun.foundation.modelling.Converter;
+import com.github.sun.foundation.modelling.Model;
 import com.github.sun.foundation.sql.SqlBuilder;
 
 import java.io.IOException;
@@ -12,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 /**
  * @Author LinSH
@@ -105,7 +108,7 @@ public class SqlTemplate implements SqlBuilder.Template {
     return parameters;
   }
 
-  private void reformatLiteral(Appendable sb, Object value) {
+  private static void reformatLiteral(Appendable sb, Object value) {
     try {
       if (value instanceof Integer || value instanceof Long) {
         sb.append(value.toString());
@@ -130,6 +133,12 @@ public class SqlTemplate implements SqlBuilder.Template {
     }
   }
 
+  public static String literal(Object value) {
+    StringBuilder sb = new StringBuilder();
+    reformatLiteral(sb, value);
+    return sb.toString();
+  }
+
   public static Builder newBuilder(AliasCounter counter) {
     return new Builder(counter);
   }
@@ -152,9 +161,15 @@ public class SqlTemplate implements SqlBuilder.Template {
         } else {
           StringBuilder alias = new StringBuilder();
           alias.append("#{$").append(counter.next());
-          Class<?> typeHandler = property == null ? null : property.typeHandler();
+          Class<? extends Converter.Handler> typeHandler = property == null ? null : property.typeHandler();
           if (typeHandler != null && !property.isJsonPath()) {
-            alias.append(", typeHandler=").append(typeHandler.getName());
+            List<Class<?>> handlers = Scanner.getClassesWithInterface(Converter.Parser.class)
+              .stream()
+              .map(v -> v.getInstance().parse(typeHandler))
+              .collect(Collectors.toList());
+            if (!handlers.isEmpty()) {
+              alias.append(", typeHandler=").append(handlers.get(0).getName());
+            }
           }
           alias.append("}");
           expressions.add(Expression.Parameter.of(alias.toString(), value));

@@ -1,5 +1,7 @@
 package com.github.sun.foundation.boot.utility;
 
+import lombok.experimental.UtilityClass;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -12,8 +14,9 @@ import java.util.regex.Pattern;
  * @Author LinSH
  * @Date: 10:43 AM 2019-03-01
  */
+@UtilityClass
 public class Strings {
-  public static String camelCaseToUnderScore(String name, boolean toLower) {
+  public String camelCaseToUnderScore(String name, boolean toLower) {
     StringBuilder sb = new StringBuilder();
     char[] arr = name.toCharArray();
     int i = 1;
@@ -36,7 +39,7 @@ public class Strings {
     return sb.toString();
   }
 
-  public static String joinCamelCase(String... arr) {
+  public String joinCamelCase(String... arr) {
     StringBuilder sb = new StringBuilder(arr[0]);
     for (int i = 1; i < arr.length; i++) {
       sb.append(arr[i].length() > 1 ?
@@ -45,7 +48,7 @@ public class Strings {
     return sb.toString();
   }
 
-  public static String underScoreToCamelCase(String name) {
+  public String underScoreToCamelCase(String name) {
     if (name == null || name.isEmpty()) return name;
     String[] arr = name.toLowerCase().split("_");
     StringBuilder sb = new StringBuilder(arr[0]);
@@ -59,9 +62,9 @@ public class Strings {
     return sb.toString();
   }
 
-  private static final Pattern pattern = Pattern.compile("-?[0-9]+");
+  private final Pattern pattern = Pattern.compile("-?[0-9]+");
 
-  public static boolean isInt(String s) {
+  public boolean isInt(String s) {
     if (s == null || s.isEmpty()) return false;
     return pattern.matcher(s).matches();
   }
@@ -69,7 +72,7 @@ public class Strings {
   /**
    * https://docs.oracle.com/javase/tutorial/java/data/characters.html
    */
-  public static String escape(String s) {
+  public String escape(String s) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0, c = s.length(); i < c; i++) {
       char ch = s.charAt(i);
@@ -109,7 +112,7 @@ public class Strings {
     return sb.toString();
   }
 
-  public static String hash(String s) {
+  public String hash(String s) {
     try {
       MessageDigest md = MessageDigest.getInstance("SHA-1");
       byte[] buf = s.getBytes(StandardCharsets.UTF_8);
@@ -120,11 +123,11 @@ public class Strings {
     }
   }
 
-  public static Parser newParser() {
+  public Parser newParser() {
     return new Parser();
   }
 
-  public static class Parser implements AutoCloseable {
+  public class Parser implements AutoCloseable {
     private int point;
     private int offset;
     private String input;

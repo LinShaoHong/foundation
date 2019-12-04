@@ -1,6 +1,9 @@
 package com.github.sun.foundation.sql;
 
 import com.github.sun.foundation.boot.utility.SqlFormatter;
+import com.github.sun.foundation.modelling.Converter;
+import com.github.sun.foundation.modelling.NamingStrategy;
+import com.github.sun.foundation.modelling.ColumnPrefix;
 import com.github.sun.foundation.sql.factory.SqlBuilderFactory;
 import org.junit.Test;
 
@@ -27,19 +30,19 @@ public class SqlBuilderTest {
     private String id;
     private String name;
     private String nickName;
-    @Handler(AddressesHandler.class)
+    @Converter(AddressesHandler.class)
     private List<String> addresses;
     private String e2Id;
     private String e3Id;
     private int rank;
     private long time;
-    @Handler(ObjectHandler.class)
+    @Converter(ObjectHandler.class)
     private Obj obj;
     @Transient
-    @SelectAliasPrefix("entity4")
+    @ColumnPrefix("entity4")
     private List<Entity4> list4;
     @Transient
-    @SelectAliasPrefix("entity5")
+    @ColumnPrefix("entity5")
     private Entity5 entity5;
   }
 
@@ -69,7 +72,7 @@ public class SqlBuilderTest {
     private String nickName;
     private long time;
     private int rank;
-    @Handler(ObjectHandler.class)
+    @Converter(ObjectHandler.class)
     private Obj obj;
   }
 
@@ -81,7 +84,7 @@ public class SqlBuilderTest {
     private String name;
     private long time;
     private int rank;
-    @Handler(ObjectHandler.class)
+    @Converter(ObjectHandler.class)
     private Obj obj;
   }
 
@@ -105,10 +108,28 @@ public class SqlBuilderTest {
     private long time;
   }
 
-  public static class ObjectHandler {
+  public static class ObjectHandler implements Converter.Handler<Object, Object> {
+    @Override
+    public Object serialize(Object value) {
+      return null;
+    }
+
+    @Override
+    public Object deserialize(Object value) {
+      return null;
+    }
   }
 
-  public static class AddressesHandler {
+  public static class AddressesHandler implements Converter.Handler<Object, Object> {
+    @Override
+    public Object serialize(Object value) {
+      return null;
+    }
+
+    @Override
+    public Object deserialize(Object value) {
+      return null;
+    }
   }
 
   @Test

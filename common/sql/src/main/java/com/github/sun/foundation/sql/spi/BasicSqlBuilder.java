@@ -5,14 +5,14 @@ import com.github.sun.foundation.boot.utility.Strings;
 import com.github.sun.foundation.boot.utility.Tuple;
 import com.github.sun.foundation.expression.Expression;
 import com.github.sun.foundation.expression.Expression.*;
-import com.github.sun.foundation.sql.Model;
+import com.github.sun.foundation.modelling.Model;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
-import static com.github.sun.foundation.sql.Model.resultType;
+import static com.github.sun.foundation.modelling.Model.resultType;
 
 /**
  * @Author LinSH
@@ -122,19 +122,19 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
         if (alias == null) {
           if (s.expr instanceof MemberAccessExpression) {
             List<String> paths = paths(s.expr);
-            Model.Property aliasPrefixProp = getSelectAliasPrefixProp(paths.get(0));
-            if (aliasPrefixProp != null) {
-              String selectAliasPrefix = aliasPrefixProp.selectAliasPrefix();
+            Model.Property columnPrefixProp = getColumnPrefixProp(paths.get(0));
+            if (columnPrefixProp != null) {
+              String columnPrefix = columnPrefixProp.columnPrefix();
               if ("*".equals(paths.get(1))) {
                 String a = paths.get(0);
-                Model model = model(resultType(aliasPrefixProp.field().getGenericType()));
+                Model model = model(resultType(columnPrefixProp.field().getGenericType()));
                 buildWithSep(sb, ", ", model.persistenceProperties(), (builder, property) -> {
                   field(a + "." + property.name()).visit(visitor);
-                  builder.append(" AS ").append(column(visitor, Strings.joinCamelCase(selectAliasPrefix, property.name())));
+                  builder.append(" AS ").append(column(visitor, Strings.joinCamelCase(columnPrefix, property.name())));
                 });
               } else {
                 s.expr.visit(visitor);
-                alias = Strings.joinCamelCase(selectAliasPrefix, paths.get(1));
+                alias = Strings.joinCamelCase(columnPrefix, paths.get(1));
               }
             } else {
               s.expr.visit(visitor);
@@ -164,7 +164,7 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
     }
   }
 
-  private Model.Property getSelectAliasPrefixProp(String ref) {
+  private Model.Property getColumnPrefixProp(String ref) {
     Join join = joins().stream()
       .filter(j -> j.alias.equals(ref))
       .findFirst()

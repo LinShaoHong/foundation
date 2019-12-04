@@ -1,7 +1,7 @@
 package com.github.sun.foundation.mybatis.query;
 
+import com.github.sun.foundation.modelling.Model;
 import com.github.sun.foundation.sql.DBType;
-import com.github.sun.foundation.sql.Model;
 import com.github.sun.foundation.sql.SqlBuilder;
 import com.github.sun.foundation.sql.factory.SqlBuilderFactory;
 import org.apache.ibatis.annotations.Param;
@@ -13,16 +13,16 @@ import java.util.Map;
 import java.util.Set;
 
 public interface QueryMapper<T> {
-  @SelectProvider(type = QueryProvider.class, method = "findAll")
+  @SelectProvider(type = Provider.class, method = "findAll")
   List<T> findAll();
 
-  @SelectProvider(type = QueryProvider.class, method = "findById")
+  @SelectProvider(type = Provider.class, method = "findById")
   T findById(@Param("id") Serializable id);
 
-  @SelectProvider(type = QueryProvider.class, method = "findByIds")
+  @SelectProvider(type = Provider.class, method = "findByIds")
   List<T> findByIds(@Param("template") Set<Serializable> ids);
 
-  class QueryProvider {
+  class Provider {
     public String findAll(Map<String, Object> params) {
       Class<?> clazz = (Class<?>) params.get("$RESULT_TYPE");
       SqlBuilder.Factory factory = factory(params);

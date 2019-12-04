@@ -1,0 +1,6 @@
+dependencies {
+  compile project(":$rootName-boot")
+  compile "javax.persistence:persistence-api:$vers.jax_persistence"
+}
+
+apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")

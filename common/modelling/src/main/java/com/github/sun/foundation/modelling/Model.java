@@ -1,8 +1,7 @@
-package com.github.sun.foundation.sql;
+package com.github.sun.foundation.modelling;
 
 import com.github.sun.foundation.boot.utility.Cache;
 import com.github.sun.foundation.boot.utility.Strings;
-import com.github.sun.foundation.boot.utility.TypeInfo;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -92,9 +91,9 @@ public interface Model {
       return true;
     }
 
-    String selectAliasPrefix();
+    String columnPrefix();
 
-    Class<?> typeHandler();
+    Class<? extends Converter.Handler> typeHandler();
 
     boolean hasAnnotation(Class<? extends Annotation> annotationClass);
 
@@ -208,8 +207,8 @@ public interface Model {
   class PropertyImpl implements Property {
     private final Field field;
 
-    private Class<?> typeHandler;
-    private String selectAliasPrefix;
+    private Class<? extends Converter.Handler> typeHandler;
+    private String columnPrefix;
     private boolean isJsonPath;
     private Model model;
     private String column;
@@ -261,11 +260,11 @@ public interface Model {
     }
 
     @Override
-    public Class<?> typeHandler() {
+    public Class<? extends Converter.Handler> typeHandler() {
       if (field != null && typeHandler == null) {
-        Handler handler = field.getAnnotation(Handler.class);
-        if (handler != null) {
-          typeHandler = handler.value();
+        Converter converter = field.getAnnotation(Converter.class);
+        if (converter != null) {
+          typeHandler = converter.value();
         }
       }
       return typeHandler;
@@ -297,12 +296,12 @@ public interface Model {
     }
 
     @Override
-    public String selectAliasPrefix() {
-      if (field != null && selectAliasPrefix == null) {
-        SelectAliasPrefix a = field.getAnnotation(SelectAliasPrefix.class);
-        selectAliasPrefix = a == null ? null : a.value();
+    public String columnPrefix() {
+      if (field != null && columnPrefix == null) {
+        ColumnPrefix a = field.getAnnotation(ColumnPrefix.class);
+        columnPrefix = a == null ? null : a.value();
       }
-      return selectAliasPrefix;
+      return columnPrefix;
     }
   }
 
@@ -312,15 +311,12 @@ public interface Model {
       if (rawType.isAssignableFrom(Map.class)) {
         return Map.class;
       }
-      for (Class<?> baseClass : baseTypes) {
-        List<Type> types = TypeInfo.getTypeParameters(type, baseClass);
-        if (types != null) {
-          Type t = types.get(0);
-          if (t instanceof ParameterizedType) {
-            return resultType(((ParameterizedType) t).getRawType());
-          }
-          return resultType(t);
+      if (Iterable.class.isAssignableFrom(rawType)) {
+        Type t = ((ParameterizedType) type).getActualTypeArguments()[0];
+        if (t instanceof ParameterizedType) {
+          return resultType(((ParameterizedType) t).getRawType());
         }
+        return resultType(t);
       }
     } else if (type instanceof Class) {
       Class<?> c = (Class<?>) type;
@@ -331,6 +327,4 @@ public interface Model {
     }
     return null;
   }
-
-  Class<?>[] baseTypes = {List.class, Set.class};
 }
