@@ -20,7 +20,10 @@ public interface QueryMapper<T> {
   T findById(@Param("id") Serializable id);
 
   @SelectProvider(type = Provider.class, method = "findByIds")
-  List<T> findByIds(@Param("template") Set<Serializable> ids);
+  List<T> findByIds(@Param("template") Set<? extends Serializable> ids);
+
+  @SelectProvider(type = Provider.class, method = "count")
+  int count();
 
   class Provider {
     public String findAll(Map<String, Object> params) {
@@ -50,6 +53,14 @@ public interface QueryMapper<T> {
         throw new IllegalArgumentException("ids is empty");
       }
       SqlBuilder.Template template = sb.from(clazz).where(sb.field(id(clazz)).in(ids)).template();
+      return reset(params, template);
+    }
+
+    public String count(Map<String, Object> params) {
+      Class<?> clazz = (Class<?>) params.get("$RESULT_TYPE");
+      SqlBuilder.Factory factory = factory(params);
+      SqlBuilder sb = factory.create();
+      SqlBuilder.Template template = sb.from(clazz).count().template();
       return reset(params, template);
     }
 

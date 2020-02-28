@@ -488,6 +488,14 @@ public interface SqlBuilder {
 
     OrderAble orderBy(OrderMode mode, Expression expr);
 
+    default OrderAble orderBy(Expression expr, boolean asc) {
+      return orderBy(asc ? OrderMode.ASC : OrderMode.DESC, expr);
+    }
+
+    default OrderAble orderBy(String field, boolean asc) {
+      return orderBy(Expression.path(field), asc);
+    }
+
     <T> OrderAble orderBy(Iterable<T> values, Function<T, Order> func);
 
     default OrderAble asc(Expression expr) {

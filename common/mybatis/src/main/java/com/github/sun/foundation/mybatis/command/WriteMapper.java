@@ -38,7 +38,7 @@ public interface WriteMapper<T> {
   int deleteById(@Param("id") Serializable id);
 
   @DeleteProvider(type = Provider.class, method = "deleteByIds")
-  int deleteByIds(@Param("ids") List<Serializable> ids);
+  int deleteByIds(@Param("ids") List<? extends Serializable> ids);
 
   @SuppressWarnings("unchecked")
   class Provider {
@@ -96,9 +96,9 @@ public interface WriteMapper<T> {
       SqlBuilder.Factory factory = factory(params);
       SqlBuilder sb = factory.create();
       SqlBuilder.Template template = sb.from(clazz)
-        .where(ids.size() == 1 ? sb.field(id).eq(ids.get(0)) : sb.field(id).in(ids))
-        .delete()
-        .template();
+          .where(ids.size() == 1 ? sb.field(id).eq(ids.get(0)) : sb.field(id).in(ids))
+          .delete()
+          .template();
       return reset(params, template);
     }
 

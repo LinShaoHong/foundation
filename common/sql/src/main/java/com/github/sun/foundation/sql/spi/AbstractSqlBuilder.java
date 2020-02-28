@@ -4,8 +4,8 @@ package com.github.sun.foundation.sql.spi;
 import com.github.sun.foundation.boot.utility.Cache;
 import com.github.sun.foundation.boot.utility.Tuple;
 import com.github.sun.foundation.expression.Expression;
-import com.github.sun.foundation.sql.JoinMode;
 import com.github.sun.foundation.modelling.Model;
+import com.github.sun.foundation.sql.JoinMode;
 import com.github.sun.foundation.sql.OrderMode;
 import com.github.sun.foundation.sql.SqlBuilder;
 
@@ -455,6 +455,7 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
 
   @Override
   public OrderAble orderBy(OrderMode model, Expression expr) {
+    if (expr == null) return this;
     if (orders == null) {
       orders = new ArrayList<>();
     }
