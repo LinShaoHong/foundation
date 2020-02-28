@@ -1,60 +1,98 @@
 package com.github.sun.foundation.boot.exception;
 
-/**
- * 响应异常, 自定义异常需继承ResponsiveException，用以将异常信息返回给前端
- */
+
+import javax.ws.rs.core.Response;
+
 public abstract class ResponsiveException extends RuntimeException {
-  /**
-   * 异常类型
-   */
-  public enum Kind {
-    /**
-     * 参数错误
-     */
-    BAD_REQUEST,
-    /**
-     * 资源不存在
-     */
-    NOT_FOUND,
-    /**
-     * 违反业务约束
-     */
-    ANTI_CONSTRAINT,
-    /**
-     * 权限不足
-     */
-    ACCESS_DENIED,
-    /**
-     * 未登陆
-     */
-    UNAUTHORIZED,
-    /**
-     * 超时
-     */
-    TIMEOUT,
-    /**
-     * 服务器出错
-     */
-    SERVER_ERROR,
-    /**
-     * 不可预期的错误
-     */
-    UNEXPECTED
-  }
+    private static final long serialVersionUID = -7775372746962627516L;
 
-  private final Kind kind;
+    /**
+     * The kind of responsive exception
+     */
+    public enum Kind {
+        /**
+         * Throw a message to notify something, it's not a error
+         */
+        MESSAGE,
+        /**
+         * When parameters are wrong
+         */
+        BAD_REQUEST,
+        /**
+         * When can not find the resource
+         */
+        NOT_FOUND,
+        /**
+         * When the business constraint are broken
+         */
+        ANTI_CONSTRAINT,
+        /**
+         * When there are no permissions
+         */
+        ACCESS_DENIED,
+        /**
+         * When is not authorized, like did not login
+         */
+        UNAUTHORIZED,
+        /**
+         * Time out
+         */
+        TIMEOUT,
+        /**
+         * Server error
+         */
+        SERVER_ERROR,
+        /**
+         * When some unexpected exception occur
+         */
+        UNEXPECTED
+    }
 
-  ResponsiveException(String message, Kind kind) {
-    super(message);
-    this.kind = kind;
-  }
+    private int code;
+    private Kind kind;
 
-  ResponsiveException(String message, Kind kind, Throwable cause) {
-    super(message, cause);
-    this.kind = kind;
-  }
+    public ResponsiveException(int code, String message, Kind kind) {
+        super(message);
+        this.kind = kind;
+        this.code = code;
+    }
 
-  public Kind getKind() {
-    return kind;
-  }
+    public ResponsiveException(String message, Kind kind, Throwable cause) {
+        super(message, cause);
+        this.code = getStatus(kind).getStatusCode();
+        this.kind = kind;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public Kind getKind() {
+        return kind;
+    }
+
+    static Response.Status getStatus(Kind kind) {
+        switch (kind) {
+            case MESSAGE:
+                return Response.Status.OK;
+            case ACCESS_DENIED:
+                return Response.Status.FORBIDDEN;
+            case BAD_REQUEST:
+                return Response.Status.BAD_REQUEST;
+            case UNAUTHORIZED:
+                return Response.Status.UNAUTHORIZED;
+            case NOT_FOUND:
+                return Response.Status.NOT_FOUND;
+            case TIMEOUT:
+                return Response.Status.REQUEST_TIMEOUT;
+            case SERVER_ERROR:
+                return Response.Status.SERVICE_UNAVAILABLE;
+            case UNEXPECTED:
+                return Response.Status.INTERNAL_SERVER_ERROR;
+            case ANTI_CONSTRAINT:
+                return Response.Status.PRECONDITION_FAILED;
+            default:
+                throw new IllegalStateException("Illegal exception kind with " + kind.name());
+        }
+    }
 }
