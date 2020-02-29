@@ -9,6 +9,7 @@ import com.github.sun.foundation.sql.JoinMode;
 import com.github.sun.foundation.sql.OrderMode;
 import com.github.sun.foundation.sql.SqlBuilder;
 
+import java.sql.JDBCType;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -41,9 +42,13 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
   protected boolean count;
   protected boolean forUpdate;
   protected boolean insert;
+  protected boolean createTable;
   protected Expression subQueryExpressionForInsertion;
   protected boolean delete;
   protected List<Map<String, Expression>> updateSets;
+  private List<Column> columns;
+  private List<String> primaryKeys;
+  private List<Index> indexes;
   protected Template template;
 
   @Override
@@ -75,7 +80,11 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
     this.insert = false;
     this.subQueryExpressionForInsertion = null;
     this.delete = false;
+    this.createTable = false;
     this.updateSets = null;
+    this.columns = null;
+    this.primaryKeys = null;
+    this.indexes = null;
     this.template = null;
   }
 
@@ -130,7 +139,7 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
 
           @Override
           public Property findProperty(String name) {
-            return new PropertyImpl(null) {
+            return new PropertyImpl(this, null) {
               @Override
               public String name() {
                 return name;
@@ -153,7 +162,7 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
       @Override
       public List<Property> persistenceProperties() {
         if (selects != null) {
-          return selects.stream().map(select -> new PropertyImpl(null) {
+          return selects.stream().map(select -> new PropertyImpl(this, null) {
             @Override
             public String name() {
               return select.alias;
@@ -198,7 +207,7 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
     }
   }
 
-  protected class Counter {
+  protected static class Counter {
     private int count = 1;
 
     public int next() {
@@ -615,27 +624,150 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
   }
 
   @Override
+  public ColumnSet createTable(String table) {
+    push();
+    createTable = true;
+    this.mainModel = model(table);
+    return this;
+  }
+
+  @Override
+  public ColumnSet column(String name, JDBCType type, int length, int scale, boolean notNull, String defaultValue, String expression) {
+    if (columns == null) {
+      columns = new ArrayList<>();
+    }
+    columns.add(new Column(name, makeType(type, length, scale), notNull, defaultValue, expression));
+    return this;
+  }
+
+  /**
+   * 由于JDBC没有TEXT数据类型，所以用VARCHAR + JDBC_TEXT_LENGTH表示。
+   */
+  private static final int JDBC_TEXT_LENGTH = 65536;
+
+  protected String makeType(JDBCType type, int length, int scale) {
+    switch (type) {
+      case BLOB:
+        return "BLOB";
+      case CLOB:
+        return "CLOB";
+      case CHAR:
+      case VARCHAR:
+      case NCHAR:
+      case NVARCHAR:
+        if (length < JDBC_TEXT_LENGTH) {
+          if (type == JDBCType.NCHAR || type == JDBCType.NVARCHAR) {
+            return "NVARCHAR(" + length + ")";
+          } else {
+            return "VARCHAR(" + length + ")";
+          }
+        }
+        // make it as TEXT/LONGTEXT if too long
+      case LONGVARCHAR:
+      case LONGNVARCHAR:
+        if (length <= JDBC_TEXT_LENGTH) {
+          return "TEXT";
+        } else {
+          return "LONGTEXT";
+        }
+      case INTEGER:
+        return "INT";
+      case BIGINT:
+        return "BIGINT";
+      case DECIMAL:
+        return "DECIMAL(" + length + ", " + scale + ")";
+      case BIT:
+        return "BIT(" + length + ")";
+      case DATE:
+      case TIMESTAMP:
+        return "DATETIME";
+      case BOOLEAN:
+        return "BOOLEAN";
+      case JAVA_OBJECT:
+        return "JSON";
+      default:
+        throw new IllegalArgumentException();
+    }
+  }
+
+  @Override
+  public IndexSet primaryKey(Iterable<String> fields) {
+    if (primaryKeys != null) {
+      throw new UnsupportedOperationException("已设置主键");
+    }
+    List<String> arr = new ArrayList<>();
+    for (String f : fields) {
+      arr.add(f);
+    }
+    primaryKeys = arr;
+    return this;
+  }
+
+  @Override
+  public IndexSet index(String name, Iterable<String> fields) {
+    if (indexes == null) {
+      indexes = new ArrayList<>();
+    }
+    List<String> arr = new ArrayList<>();
+    for (String f : fields) {
+      arr.add(f);
+    }
+    indexes.add(new Index(name, arr));
+    return this;
+  }
+
+  protected static class Column {
+    public final String name;
+    public final String type;
+    public final boolean notNull;
+    public final String defaultValue;
+    public final String expression;
+
+    public Column(String name, String type, boolean notNull, String defaultValue, String expression) {
+      this.name = name;
+      this.type = type;
+      this.notNull = notNull;
+      this.defaultValue = defaultValue;
+      this.expression = expression;
+    }
+  }
+
+  protected static class Index {
+    public final String name;
+    public final List<String> fields;
+
+    public Index(String name, List<String> fields) {
+      this.name = name;
+      this.fields = fields;
+    }
+  }
+
+  @Override
   public Template template() {
     if (template == null) {
-      Expression condition = null;
-      if (conditions != null && !conditions.isEmpty()) {
-        condition = conditions.get(0);
-        for (int i = 1; i < conditions.size(); i++) {
-          condition = condition.and(conditions.get(i));
-        }
-      }
-      if (delete) {
-        template = buildDeleteTemplate(from, deletes, joins, condition);
-      } else if (insert && (subQueryExpressionForInsertion != null || (updateSets != null && !updateSets.isEmpty()))) {
-        if (updateSets != null) {
-          updateSets.removeIf(Map::isEmpty);
-        }
-        template = buildInsertTemplate(from, subQueryExpressionForInsertion, updateSets);
-      } else if (updateSets != null && !updateSets.isEmpty()) {
-        updateSets.removeIf(Map::isEmpty);
-        template = buildUpdateTemplate(from, joins, condition, updateSets);
+      if (createTable) {
+        template = buildCreateTable(mainModel.tableName(), columns, primaryKeys, indexes);
       } else {
-        template = buildQueryTemplate(from, joins, condition, selects, groupBy(), orders, limit, distinct, count, forUpdate);
+        Expression condition = null;
+        if (conditions != null && !conditions.isEmpty()) {
+          condition = conditions.get(0);
+          for (int i = 1; i < conditions.size(); i++) {
+            condition = condition.and(conditions.get(i));
+          }
+        }
+        if (delete) {
+          template = buildDeleteTemplate(from, deletes, joins, condition);
+        } else if (insert && (subQueryExpressionForInsertion != null || (updateSets != null && !updateSets.isEmpty()))) {
+          if (updateSets != null) {
+            updateSets.removeIf(Map::isEmpty);
+          }
+          template = buildInsertTemplate(from, subQueryExpressionForInsertion, updateSets);
+        } else if (updateSets != null && !updateSets.isEmpty()) {
+          updateSets.removeIf(Map::isEmpty);
+          template = buildUpdateTemplate(from, joins, condition, updateSets);
+        } else {
+          template = buildQueryTemplate(from, joins, condition, selects, groupBy(), orders, limit, distinct, count, forUpdate);
+        }
       }
     }
     return template;
@@ -663,6 +795,8 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
       throw new RuntimeException(ex);
     }
   }
+
+  protected abstract Template buildCreateTable(String table, List<Column> columns, List<String> primaryKeys, List<Index> indexes);
 
   protected abstract Template buildInsertTemplate(From from, Expression subQueryExpressionForInsertion, List<Map<String, Expression>> updateSets);
 

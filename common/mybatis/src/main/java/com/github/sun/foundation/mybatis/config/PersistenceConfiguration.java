@@ -3,6 +3,7 @@ package com.github.sun.foundation.mybatis.config;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.github.sun.foundation.boot.utility.Packages;
 import com.github.sun.foundation.mybatis.CompositeMapper;
+import com.github.sun.foundation.mybatis.SqlSessionMeta;
 import org.apache.ibatis.annotations.Mapper;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
@@ -11,6 +12,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -36,6 +38,13 @@ public abstract class PersistenceConfiguration {
     factoryBean.setDataSource(dataSource);
     PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
     factoryBean.setConfigLocation(resolver.getResource(CONFIG_LOCATION));
+    try (Connection conn = dataSource.getConnection()) {
+      String basePackage = basePackage() == null ? Packages.group(getClass()) : basePackage();
+      SqlSessionMeta meta = SqlSessionMeta.build(CONFIG_LOCATION, "sun", basePackage, dataSource, factoryBean.getObject());
+      SqlSessionMeta.collector.put(basePackage(), meta);
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
     return factoryBean;
   }
 

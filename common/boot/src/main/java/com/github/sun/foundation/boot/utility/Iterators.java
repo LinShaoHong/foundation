@@ -17,6 +17,22 @@ import java.util.stream.StreamSupport;
  */
 @UtilityClass
 public class Iterators {
+  public <A, B> Iterable<B> map(Iterable<A> values, Function<A, B> func) {
+    Iterator<A> it = values.iterator();
+    return () -> new Iterator<B>() {
+      @Override
+      public boolean hasNext() {
+        return it.hasNext();
+      }
+
+      @Override
+      public B next() {
+        A v = it.next();
+        return func.apply(v);
+      }
+    };
+  }
+
   public <T> String mkString(Iterable<T> values, CharSequence delimiter) {
     return mkString(values, delimiter, String::valueOf);
   }

@@ -26,6 +26,41 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
   }
 
   @Override
+  protected Template buildCreateTable(String table, List<Column> columns, List<String> primaryKeys, List<Index> indexes) {
+    SqlTemplate.Builder sb = SqlTemplate.newBuilder(counter::next);
+    sb.append("CREATE TABLE ")
+      .append(escapeName(table))
+      .append(" (");
+    buildWithSep(sb, ",", columns, (s, f) -> {
+      s.append("\n  ").append(escapeName(f.name)).append(" ").append(f.type);
+      if (f.defaultValue != null) {
+        s.append(" ").append(f.defaultValue);
+      }
+      if (f.expression != null && !f.expression.isEmpty()) {
+        s.append(" GENERATED ALWAYS AS (").append(f.expression).append(")");
+      }
+      if (f.notNull) {
+        s.append(" NOT NULL");
+      }
+    });
+    if (primaryKeys != null && primaryKeys.size() > 0) {
+      sb.append(",\n  PRIMARY KEY (");
+      buildWithSep(sb, ", ", Iterators.map(primaryKeys, this::escapeName), SqlTemplate.Builder::append);
+      sb.append(")");
+    }
+    if (indexes != null && indexes.size() > 0) {
+      sb.append(",");
+      buildWithSep(sb, ",", indexes, (s, i) -> {
+        s.append("\n  INDEX ").append(escapeName(i.name)).append("(");
+        buildWithSep(s, ", ", Iterators.map(i.fields, this::escapeName), SqlTemplate.Builder::append);
+        s.append(")");
+      });
+    }
+    sb.append("\n)");
+    return sb.build();
+  }
+
+  @Override
   protected Template buildInsertTemplate(From from, Expression subQueryExpressionForInsertion, List<Map<String, Expression>> updateSets) {
     SqlTemplate.Builder sb = SqlTemplate.newBuilder(counter::next);
     sb.append("INSERT INTO ");
@@ -209,7 +244,8 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
       sb.append(")");
     } else {
       Model model = model(from);
-      sb.append(escapeName(model.tableName()));
+      String[] arr = model.tableName().split("\\.");
+      buildWithSep(sb, ".", Arrays.asList(arr), (s, v) -> s.append(escapeName(v)));
     }
     if (from.alias != null) {
       sb.append(" AS ").append(escapeName(from.alias));

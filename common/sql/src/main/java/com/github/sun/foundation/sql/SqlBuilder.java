@@ -7,6 +7,7 @@ import com.github.sun.foundation.expression.ExpressionParser;
 import lombok.Builder;
 import lombok.Data;
 
+import java.sql.JDBCType;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -634,6 +635,81 @@ public interface SqlBuilder {
     }
   }
 
+  ColumnSet createTable(String table);
+
+  interface ColumnSet extends PrimaryKeySet {
+    ColumnSet column(String name, JDBCType type, int length, int scale, boolean notNull, String defaultValue, String expression);
+
+    default ColumnSet column(String name, JDBCType type, int length, int scale, boolean notNull, String defaultValue) {
+      return column(name, type, length, scale, notNull, defaultValue, null);
+    }
+
+    default ColumnSet column(String name, JDBCType type, int length, boolean notNull, String defaultValue) {
+      return column(name, type, length, 0, notNull, defaultValue);
+    }
+
+    default ColumnSet column(String name, JDBCType type, boolean notNull, String defaultValue) {
+      return column(name, type, 0, notNull, defaultValue);
+    }
+
+    default ColumnSet column(String name, JDBCType type, int length, int scale, boolean notNull) {
+      return column(name, type, length, scale, notNull, null);
+    }
+
+    default ColumnSet column(String name, JDBCType type, int length, boolean notNull) {
+      return column(name, type, length, 0, notNull, null);
+    }
+
+    default ColumnSet column(String name, JDBCType type, int length, int scale, String defaultValue) {
+      return column(name, type, length, scale, true, defaultValue);
+    }
+
+    default ColumnSet column(String name, JDBCType type, int length, String defaultValue) {
+      return column(name, type, length, 0, true, defaultValue);
+    }
+
+    default ColumnSet column(String name, JDBCType type, int length, int scale) {
+      return column(name, type, length, scale, true, null);
+    }
+
+    default ColumnSet column(String name, JDBCType type, int length) {
+      return column(name, type, length, 0, true, null);
+    }
+
+    default ColumnSet column(String name, JDBCType type, boolean notNull) {
+      return column(name, type, notNull, null);
+    }
+
+    default ColumnSet column(String name, JDBCType type) {
+      return column(name, type, true, null);
+    }
+  }
+
+  interface PrimaryKeySet extends IndexSet {
+    IndexSet primaryKey(Iterable<String> fields);
+
+    default IndexSet primaryKey(String... fields) {
+      return primaryKey(Arrays.asList(fields));
+    }
+  }
+
+  interface IndexSet extends TemplateBuilder {
+    IndexSet index(String name, Iterable<String> fields);
+
+    default IndexSet index(String name, String... fields) {
+      return index(name, Arrays.asList(fields));
+    }
+
+    default IndexSet index(String... fields) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("idx");
+      for (String f : fields) {
+        sb.append("_").append(f);
+      }
+      return index(sb.toString(), fields);
+    }
+  }
+
   interface TemplateBuilder {
     Template template();
 
@@ -704,11 +780,15 @@ public interface SqlBuilder {
     }
   }
 
-  interface StatelessSqlBuilder extends SqlBuilder, JoinAble, UpdateAble {
+  interface StatelessSqlBuilder extends SqlBuilder, JoinAble, UpdateAble, ColumnSet {
   }
 
   interface Factory {
-    SqlBuilder create();
+    default SqlBuilder create() {
+      return createStatelessBuilder();
+    }
+
+    StatelessSqlBuilder createStatelessBuilder();
   }
 
   default Expression parse(String expr) {

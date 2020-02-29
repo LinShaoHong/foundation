@@ -20,10 +20,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * @Author LinSH
- * @Date: 7:40 PM 2019-02-28
- */
 public interface Model {
   default String name() {
     return rawClass().getName();
@@ -61,7 +57,7 @@ public interface Model {
 
   default Property findProperty(String name) {
     if ("*".equals(name) || Strings.isInt(name)) {
-      return new PropertyImpl(null) {
+      return new PropertyImpl(this, null) {
         @Override
         public String name() {
           return name;
@@ -74,12 +70,47 @@ public interface Model {
       .orElseThrow(() -> new IllegalArgumentException(name() + " unknown '" + name + "'"));
   }
 
+  enum Kind {
+    /**
+     * Numeric type
+     */
+    NUMBER,
+    /**
+     * String type
+     */
+    TEXT,
+    /**
+     * True or false
+     */
+    BOOLEAN,
+    /**
+     * Datetime
+     */
+    DATE,
+    /**
+     * Enumerable type
+     */
+    ENUM,
+    /**
+     * Inline object
+     */
+    OBJECT,
+    /**
+     * Array of elements
+     */
+    ARRAY
+  }
+
   interface Property {
     String name();
 
     Model model();
 
     Field field();
+
+    Kind kind();
+
+    Type javaType();
 
     String column();
 
@@ -139,7 +170,7 @@ public interface Model {
             .filter(f -> !f.getName().contains("$")
               && !f.isAnnotationPresent(Transient.class)
               && (f.getModifiers() & ignoreModifier) <= 0)
-            .map(PropertyImpl::new)
+            .map(field -> new PropertyImpl(this, field))
             .collect(Collectors.toList());
           persistenceProperties = Collections.unmodifiableList(persistenceProperties);
         } else {
@@ -183,7 +214,7 @@ public interface Model {
         if (hasProperties()) {
           transientProperties = Stream.of(entityClass.getDeclaredFields())
             .filter(f -> f.isAnnotationPresent(Transient.class))
-            .map(PropertyImpl::new)
+            .map(field -> new PropertyImpl(this, field))
             .collect(Collectors.toList());
           transientProperties = Collections.unmodifiableList(transientProperties);
         } else {
@@ -205,6 +236,19 @@ public interface Model {
   }
 
   class PropertyImpl implements Property {
+    private final static Map<Type, Kind> cache = new HashMap<>();
+
+    static {
+      Arrays.asList(int.class, long.class, float.class, double.class, byte.class,
+        Integer.class, Long.class, Float.class, Double.class, Byte.class,
+        BigDecimal.class, BigInteger.class).forEach(c -> cache.put(c, Kind.NUMBER));
+      cache.put(boolean.class, Kind.BOOLEAN);
+      cache.put(Boolean.class, Kind.BOOLEAN);
+      cache.put(String.class, Kind.TEXT);
+      cache.put(Date.class, Kind.DATE);
+    }
+
+    private final Model parent;
     private final Field field;
 
     private Class<? extends Converter.Handler> typeHandler;
@@ -213,7 +257,8 @@ public interface Model {
     private Model model;
     private String column;
 
-    protected PropertyImpl(Field field) {
+    protected PropertyImpl(Model parent, Field field) {
+      this.parent = parent;
       this.field = field;
     }
 
@@ -223,11 +268,41 @@ public interface Model {
     }
 
     @Override
+    public Kind kind() {
+      return cache.computeIfAbsent(javaType(), javaType -> {
+        Class<?> rawType = field().getType();
+        if (rawType.isEnum()) {
+          return Kind.ENUM;
+        }
+        if (Map.class.isAssignableFrom(rawType)) {
+          return Kind.OBJECT;
+        }
+        if (Collection.class.isAssignableFrom(rawType)) {
+          return Kind.ARRAY;
+        }
+        if (Number.class.isAssignableFrom(rawType)) {
+          return Kind.NUMBER;
+        }
+        return Kind.OBJECT;
+      });
+    }
+
+    @Override
+    public Type javaType() {
+      return field().getGenericType();
+    }
+
+    @Override
     public String column() {
       if (column == null && field != null) {
         Column c = field().getAnnotation(Column.class);
         if (c != null) {
           column = c.name();
+        } else {
+          Class<?> rawClass = parent == null ? null : parent.rawClass();
+          NamingStrategy a = rawClass == null ? null : rawClass.getAnnotation(NamingStrategy.class);
+          boolean camelCaseToUnderscore = a != null && a.value().startsWith("camelCaseTo");
+          column = camelCaseToUnderscore ? Strings.camelCaseToUnderScore(name(), a.value().contains("Lower")) : name();
         }
       }
       return column;

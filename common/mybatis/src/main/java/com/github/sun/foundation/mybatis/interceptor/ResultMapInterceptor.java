@@ -8,7 +8,6 @@ import com.github.sun.foundation.modelling.Converter;
 import com.github.sun.foundation.modelling.JsonHandler;
 import com.github.sun.foundation.modelling.Model;
 import com.github.sun.foundation.mybatis.interceptor.utility.ParameterParser;
-import com.github.sun.foundation.mybatis.interceptor.utility.TypeHandlerParser;
 import com.github.sun.foundation.sql.DBType;
 import org.apache.ibatis.executor.BaseExecutor;
 import org.apache.ibatis.executor.Executor;
@@ -151,7 +150,7 @@ public class ResultMapInterceptor extends BasicInterceptor {
     return resultMap != null ? resultMap.getId() : null;
   }
 
-  private Class<?> findEntityClass(Class<?> mapperClass) {
+  public static Class<?> findEntityClass(Class<?> mapperClass) {
     Type[] types = mapperClass.getGenericInterfaces();
     if (types != null && types.length > 0) {
       Type t = types[0];
