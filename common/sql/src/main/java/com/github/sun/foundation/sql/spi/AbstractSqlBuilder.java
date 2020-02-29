@@ -643,7 +643,7 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
   /**
    * 由于JDBC没有TEXT数据类型，所以用VARCHAR + JDBC_TEXT_LENGTH表示。
    */
-  private static final int JDBC_TEXT_LENGTH = 65536;
+  public static final int JDBC_TEXT_LENGTH = 65536;
 
   protected String makeType(JDBCType type, int length, int scale) {
     switch (type) {

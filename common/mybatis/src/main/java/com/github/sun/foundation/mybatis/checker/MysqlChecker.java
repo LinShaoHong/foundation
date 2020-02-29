@@ -12,6 +12,7 @@ import com.github.sun.foundation.mybatis.query.IndexParser;
 import com.github.sun.foundation.sql.ConnectionManager;
 import com.github.sun.foundation.sql.SqlBuilder;
 import com.github.sun.foundation.sql.factory.SqlBuilderFactory;
+import com.github.sun.foundation.sql.spi.AbstractSqlBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -85,8 +86,6 @@ public class MysqlChecker implements Lifecycle {
         .select(sb.field("COLUMN_NAME"))
         .select(sb.field("IS_NULLABLE"))
         .select(sb.field("DATA_TYPE"))
-        .select(sb.field("CHARACTER_SET_NAME"))
-        .select(sb.field("COLLATION_NAME"))
         .select(sb.field("COLUMN_DEFAULT"))
         .select(sb.field("GENERATION_EXPRESSION"))
         .template();
@@ -98,8 +97,6 @@ public class MysqlChecker implements Lifecycle {
           cols.put(col, new Field(
             rs.getString("DATA_TYPE"),
             !"NO".equals(rs.getString("IS_NULLABLE")),
-            rs.getString("CHARACTER_SET_NAME"),
-            rs.getString("COLLATION_NAME"),
             rs.getString("COLUMN_DEFAULT") != null,
             !rs.getString("GENERATION_EXPRESSION").isEmpty()
           ));
@@ -128,6 +125,7 @@ public class MysqlChecker implements Lifecycle {
         .findFirst()
         .orElseThrow(IllegalStateException::new);
       JDBCType jdbcType;
+      int length = 0;
       switch (property.kind()) {
         case NUMBER:
           Type javaType = property.javaType();
@@ -149,7 +147,12 @@ public class MysqlChecker implements Lifecycle {
           jdbcType = JDBCType.BOOLEAN;
           break;
         case TEXT:
+          Column a = property.field().getAnnotation(Column.class);
+          length = a == null ? 255 : a.length();
+          jdbcType = JDBCType.VARCHAR;
+          break;
         case ENUM:
+          length = 10;
           jdbcType = JDBCType.VARCHAR;
           break;
         case DATE:
@@ -165,14 +168,21 @@ public class MysqlChecker implements Lifecycle {
         default:
           throw new IllegalStateException("unsupported column type: " + def.model.name() + "." + property.name() + "." + property.kind());
       }
-      String type = type(jdbcType);
+      String type = type(jdbcType, length);
       if (!field.type.equalsIgnoreCase(type)) {
         info.append(String.format("\n-- 字段'%s.%s'类型不正确,期望%s,实际是%s\n", table, c, type.toLowerCase(), field.type));
+      }
+      Set<String> keys = new HashSet<>(def.primaryKey());
+      def.indexes.forEach(i -> keys.addAll(i.keys));
+      boolean notNull = keys.contains(property.column()) ||
+        property.hasAnnotation(NotNull.class) || property.hasAnnotation(NotEmpty.class);
+      if (notNull && field.nullable && !field.defaultValue && !field.generated) {
+        info.append(String.format("\n-- 字段'%s.%s'，不能允许为NULL", table, c));
       }
     });
   }
 
-  protected String type(JDBCType type) {
+  protected String type(JDBCType type, int length) {
     switch (type) {
       case BLOB:
         return "BLOB";
@@ -182,10 +192,21 @@ public class MysqlChecker implements Lifecycle {
       case VARCHAR:
       case NCHAR:
       case NVARCHAR:
-        return "VARCHAR";
+        if (length < AbstractSqlBuilder.JDBC_TEXT_LENGTH) {
+          if (type == JDBCType.NCHAR || type == JDBCType.NVARCHAR) {
+            return "NVARCHAR";
+          } else {
+            return "VARCHAR";
+          }
+        }
+        // make it as TEXT/LONGTEXT if too long
       case LONGVARCHAR:
       case LONGNVARCHAR:
-        return "TEXT";
+        if (length <= AbstractSqlBuilder.JDBC_TEXT_LENGTH) {
+          return "TEXT";
+        } else {
+          return "LONGTEXT";
+        }
       case INTEGER:
         return "INT";
       case BIGINT:
@@ -290,9 +311,9 @@ public class MysqlChecker implements Lifecycle {
       });
     if (sb.length() > 0) {
       sb.prepend("\n\n--------------------------------------------- 数据表检查 -------------------------------------------\n");
-      sb.append("--------------------------------------------------------------------------------------------------------");
+      sb.append("\n\n--------------------------------------------------------------------------------------------------------");
+      throw new RuntimeException("表结构存在错误请先修复" + sb.toString());
     }
-    log.info(sb.toString());
   }
 
   @Override
@@ -368,16 +389,12 @@ public class MysqlChecker implements Lifecycle {
   private static class Field {
     private final String type;
     private final boolean nullable;
-    private final String charset;
-    private final String collation;
     public final boolean defaultValue;
     private final boolean generated;
 
-    private Field(String type, boolean nullable, String charset, String collation, boolean defaultValue, boolean generated) {
+    private Field(String type, boolean nullable, boolean defaultValue, boolean generated) {
       this.type = type;
       this.nullable = nullable;
-      this.charset = charset;
-      this.collation = collation;
       this.defaultValue = defaultValue;
       this.generated = generated;
     }
