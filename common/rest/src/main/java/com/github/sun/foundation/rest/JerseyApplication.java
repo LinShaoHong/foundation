@@ -61,6 +61,11 @@ public abstract class JerseyApplication<A> extends ResourceConfig {
     // sse
     set.add(SseFeature.class);
     registerClasses(set);
+    // inject context provider
+    Scanner.getClassesWithInterface(RequestScopeContextResolver.BinderProvider.class)
+      .stream()
+      .filter(Scanner.ClassTag::isImplementClass)
+      .forEach(provider -> register(provider.getInstance().binder()));
   }
 
   @Value("${spring.application.name}")

@@ -4,6 +4,7 @@ import com.github.sun.foundation.boot.Lifecycle;
 import com.github.sun.foundation.boot.Scanner;
 import com.github.sun.foundation.boot.utility.Iterators;
 import com.github.sun.foundation.boot.utility.PrependStringBuilder;
+import com.github.sun.foundation.boot.utility.Tuple;
 import com.github.sun.foundation.modelling.Converter;
 import com.github.sun.foundation.modelling.Model;
 import com.github.sun.foundation.mybatis.SqlSessionMeta;
@@ -86,6 +87,7 @@ public class MysqlChecker implements Lifecycle {
         .select(sb.field("COLUMN_NAME"))
         .select(sb.field("IS_NULLABLE"))
         .select(sb.field("DATA_TYPE"))
+        .select(sb.field("COLUMN_TYPE"))
         .select(sb.field("COLUMN_DEFAULT"))
         .select(sb.field("GENERATION_EXPRESSION"))
         .template();
@@ -96,6 +98,7 @@ public class MysqlChecker implements Lifecycle {
           String col = rs.getString("COLUMN_NAME");
           cols.put(col, new Field(
             rs.getString("DATA_TYPE"),
+            rs.getString("COLUMN_TYPE"),
             !"NO".equals(rs.getString("IS_NULLABLE")),
             rs.getString("COLUMN_DEFAULT") != null,
             !rs.getString("GENERATION_EXPRESSION").isEmpty()
@@ -118,6 +121,7 @@ public class MysqlChecker implements Lifecycle {
       info.append(String.format("\n-- 数据表'%s'存在多余字段 (%s) 请执行以下语句修改该问题:\n%s\n", table, Iterators.mkString(redundant, ", "), sql));
     }
     existColumns.removeAll(missing);
+    existColumns.removeAll(redundant);
     existColumns.forEach(c -> {
       Field field = fields.get(c);
       Model.Property property = def.model.persistenceProperties().stream()
@@ -168,36 +172,74 @@ public class MysqlChecker implements Lifecycle {
         default:
           throw new IllegalStateException("unsupported column type: " + def.model.name() + "." + property.name() + "." + property.kind());
       }
-      String type = type(jdbcType, length);
-      if (!field.type.equalsIgnoreCase(type)) {
-        info.append(String.format("\n-- 字段'%s.%s'类型不正确,期望%s,实际是%s\n", table, c, type.toLowerCase(), field.type));
+      Tuple.Tuple2<String, List<String>> types = preciseTypes(jdbcType, length);
+      if (types._2.stream().noneMatch(v -> v.equalsIgnoreCase(field.type))) {
+        if (types._1.equalsIgnoreCase("JSON")) {
+          String sql = "ALTER TABLE " + table + " CHANGE COLUMN " + c + " " + c + " JSON;";
+          info.append(String.format("\n-- 字段'%s.%s'类型不正确,期望%s,实际是%s 请执行以下语句修复该问题:\n%s\n", table, c, types._1.toLowerCase(), field.type, sql));
+        } else {
+          info.append(String.format("\n-- 字段'%s.%s'类型不正确,期望%s,实际是%s\n", table, c, types._1.toLowerCase(), field.type));
+        }
       }
       Set<String> keys = new HashSet<>(def.primaryKey());
       def.indexes.forEach(i -> keys.addAll(i.keys));
       boolean notNull = keys.contains(property.column()) ||
         property.hasAnnotation(NotNull.class) || property.hasAnnotation(NotEmpty.class);
       if (notNull && field.nullable && !field.defaultValue && !field.generated) {
-        info.append(String.format("\n-- 字段'%s.%s'，不能允许为NULL", table, c));
+        String sql = "ALTER TABLE " + table + " modify " + c + " " + field.columnType + " NOT NULL;";
+        info.append(String.format("\n-- 字段'%s.%s'，不能允许为NULL 请执行以下sql修复该问题:\n%s\n", table, c, sql));
       }
     });
   }
 
-  protected String type(JDBCType type, int length) {
+  private Tuple.Tuple2<String, List<String>> preciseTypes(JDBCType type, int length) {
+    switch (type) {
+      case TIMESTAMP:
+      case BOOLEAN:
+      case BIGINT:
+      case JAVA_OBJECT:
+        String tp = type(type, length);
+        return Tuple.of(tp, Collections.singletonList(tp));
+      case INTEGER:
+        return Tuple.of(type(JDBCType.INTEGER, length),
+          Arrays.asList(type(JDBCType.SMALLINT, length),
+            type(JDBCType.TINYINT, length),
+            type(JDBCType.INTEGER, length)));
+      case DOUBLE:
+      case DECIMAL:
+        tp = type(JDBCType.DECIMAL, length);
+        return Tuple.of(tp, Collections.singletonList(tp));
+      case VARCHAR:
+        return Tuple.of(type(JDBCType.VARCHAR, length),
+          Arrays.asList(type(JDBCType.CHAR, length),
+            type(JDBCType.VARCHAR, length),
+            type(JDBCType.NCHAR, length),
+            type(JDBCType.NVARCHAR, length),
+            type(JDBCType.LONGVARCHAR, length),
+            type(JDBCType.LONGNVARCHAR, length)));
+      default:
+        throw new IllegalStateException("unsupported jdbc type: " + type.getName());
+    }
+  }
+
+  private String type(JDBCType type, int length) {
     switch (type) {
       case BLOB:
-        return "BLOB";
       case CLOB:
-        return "CLOB";
+      case TINYINT:
+      case SMALLINT:
+      case BIGINT:
+      case DECIMAL:
+      case BIT:
+        return type.getName();
+      case INTEGER:
+        return "INT";
       case CHAR:
       case VARCHAR:
       case NCHAR:
       case NVARCHAR:
         if (length < AbstractSqlBuilder.JDBC_TEXT_LENGTH) {
-          if (type == JDBCType.NCHAR || type == JDBCType.NVARCHAR) {
-            return "NVARCHAR";
-          } else {
-            return "VARCHAR";
-          }
+          return type.getName();
         }
         // make it as TEXT/LONGTEXT if too long
       case LONGVARCHAR:
@@ -207,14 +249,6 @@ public class MysqlChecker implements Lifecycle {
         } else {
           return "LONGTEXT";
         }
-      case INTEGER:
-        return "INT";
-      case BIGINT:
-        return "BIGINT";
-      case DECIMAL:
-        return "DECIMAL";
-      case BIT:
-        return "BIT";
       case DATE:
       case TIMESTAMP:
         return "DATETIME";
@@ -311,8 +345,8 @@ public class MysqlChecker implements Lifecycle {
       });
     if (sb.length() > 0) {
       sb.prepend("\n\n--------------------------------------------- 数据表检查 -------------------------------------------\n");
-      sb.append("\n\n--------------------------------------------------------------------------------------------------------");
-      throw new RuntimeException("表结构存在错误请先修复" + sb.toString());
+      sb.append("\n--------------------------------------------------------------------------------------------------------");
+      log.info("表结构存在错误请先修复" + sb.toString());
     }
   }
 
@@ -363,7 +397,7 @@ public class MysqlChecker implements Lifecycle {
           sb.column(p.column(), JDBCType.VARCHAR, a == null ? 255 : a.length(), 0, notNull);
           break;
         case ENUM:
-          sb.column(p.column(), JDBCType.VARCHAR, 10, 0, true);
+          sb.column(p.column(), JDBCType.VARCHAR, 20, 0, true);
           break;
         case DATE:
           sb.column(p.column(), JDBCType.TIMESTAMP, 0, 0, notNull);
@@ -388,12 +422,14 @@ public class MysqlChecker implements Lifecycle {
 
   private static class Field {
     private final String type;
+    private final String columnType;
     private final boolean nullable;
     public final boolean defaultValue;
     private final boolean generated;
 
-    private Field(String type, boolean nullable, boolean defaultValue, boolean generated) {
+    private Field(String type, String columnType, boolean nullable, boolean defaultValue, boolean generated) {
       this.type = type;
+      this.columnType = columnType;
       this.nullable = nullable;
       this.defaultValue = defaultValue;
       this.generated = generated;

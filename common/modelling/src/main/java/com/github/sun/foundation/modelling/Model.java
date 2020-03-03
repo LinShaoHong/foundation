@@ -64,7 +64,7 @@ public interface Model {
         }
       };
     }
-    return persistenceProperties().stream()
+    return properties().stream()
       .filter(p -> p.name().equals(name))
       .findAny()
       .orElseThrow(() -> new IllegalArgumentException(name() + " unknown '" + name + "'"));
