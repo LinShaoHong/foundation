@@ -307,47 +307,56 @@ public class MysqlChecker implements Lifecycle {
 
   @Override
   public void startup() {
-    PrependStringBuilder sb = new PrependStringBuilder();
-    SqlSessionMeta.collector.values()
-      .forEach(meta -> {
-        Collection<Class<?>> mappers = Scanner.getClassesWithAnnotation(Mapper.class)
-          .stream().map(Scanner.ClassTag::runtimeClass).collect(Collectors.toList());
-        List<TableDef> tables = mappers.stream().map(mapperClass -> {
-          Class<?> entityClass = ResultMapInterceptor.findEntityClass(mapperClass);
-          if (entityClass != null) {
-            Model model = Model.from(entityClass);
-            String name = model.tableName();
-            if (name != null) {
-              List<TableDef.Index> indices = Stream.of(mapperClass.getDeclaredMethods())
-                .map(m -> {
-                  List<String> keys = IndexParser.parseKeyName(m.getName());
-                  if (!keys.isEmpty()) {
-                    StringBuilder s = new StringBuilder(model.tableName()).append("_idx");
-                    keys.forEach(k -> s.append("_").append(k));
-                    return new TableDef.Index(s.toString(), keys);
-                  }
-                  return null;
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-              Set<String> idxSet = new HashSet<>();
-              indices.forEach(idx -> idxSet.add(idx.name));
-              indices.removeIf(idx -> idxSet.stream().anyMatch(v -> v.length() > idx.name.length() && v.startsWith(idx.name)));
-              return new TableDef(meta.database(), model, indices.stream().distinct().collect(Collectors.toList()));
-            }
-          }
-          return null;
-        }).filter(Objects::nonNull).distinct().collect(Collectors.toList());
-        ConnectionManager connectionManager = ConnectionManager.build(meta.dataSource());
-        if (!tables.isEmpty()) {
-          sb.append(check(tables, connectionManager));
+    new Thread(() -> {
+      PrependStringBuilder sb = new PrependStringBuilder();
+      while (SqlSessionMeta.collector.isEmpty()) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+          throw new RuntimeException(ex);
         }
-      });
-    if (sb.length() > 0) {
-      sb.prepend("\n\n--------------------------------------------- 数据表检查 -------------------------------------------\n");
-      sb.append("\n--------------------------------------------------------------------------------------------------------");
-      log.info("表结构存在错误请先修复" + sb.toString());
-    }
+      }
+      SqlSessionMeta.collector.values()
+        .forEach(meta -> {
+          Collection<Class<?>> mappers = Scanner.getClassesWithAnnotation(Mapper.class)
+            .stream().map(Scanner.ClassTag::runtimeClass).collect(Collectors.toList());
+          List<TableDef> tables = mappers.stream().map(mapperClass -> {
+            Class<?> entityClass = ResultMapInterceptor.findEntityClass(mapperClass);
+            if (entityClass != null) {
+              Model model = Model.from(entityClass);
+              String name = model.tableName();
+              if (name != null) {
+                List<TableDef.Index> indices = Stream.of(mapperClass.getDeclaredMethods())
+                  .map(m -> {
+                    List<String> keys = IndexParser.parseKeyName(m.getName());
+                    if (!keys.isEmpty()) {
+                      StringBuilder s = new StringBuilder(model.tableName()).append("_idx");
+                      keys.forEach(k -> s.append("_").append(k));
+                      return new TableDef.Index(s.toString(), keys);
+                    }
+                    return null;
+                  })
+                  .filter(Objects::nonNull)
+                  .collect(Collectors.toList());
+                Set<String> idxSet = new HashSet<>();
+                indices.forEach(idx -> idxSet.add(idx.name));
+                indices.removeIf(idx -> idxSet.stream().anyMatch(v -> v.length() > idx.name.length() && v.startsWith(idx.name)));
+                return new TableDef(meta.database(), model, indices.stream().distinct().collect(Collectors.toList()));
+              }
+            }
+            return null;
+          }).filter(Objects::nonNull).distinct().collect(Collectors.toList());
+          ConnectionManager connectionManager = ConnectionManager.build(meta.dataSource());
+          if (!tables.isEmpty()) {
+            sb.append(check(tables, connectionManager));
+          }
+        });
+      if (sb.length() > 0) {
+        sb.prepend("\n\n--------------------------------------------- 数据表检查 -------------------------------------------\n");
+        sb.append("\n--------------------------------------------------------------------------------------------------------");
+        log.info("表结构存在错误请先修复" + sb.toString());
+      }
+    }).start();
   }
 
   @Override
@@ -424,7 +433,7 @@ public class MysqlChecker implements Lifecycle {
     private final String type;
     private final String columnType;
     private final boolean nullable;
-    public final boolean defaultValue;
+    private final boolean defaultValue;
     private final boolean generated;
 
     private Field(String type, String columnType, boolean nullable, boolean defaultValue, boolean generated) {

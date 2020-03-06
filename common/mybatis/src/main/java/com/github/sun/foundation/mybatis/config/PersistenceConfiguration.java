@@ -10,9 +10,9 @@ import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -38,10 +38,10 @@ public abstract class PersistenceConfiguration {
     factoryBean.setDataSource(dataSource);
     PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
     factoryBean.setConfigLocation(resolver.getResource(CONFIG_LOCATION));
-    try (Connection conn = dataSource.getConnection()) {
+    try {
       String basePackage = basePackage() == null ? Packages.group(getClass()) : basePackage();
       SqlSessionMeta meta = SqlSessionMeta.build(CONFIG_LOCATION, "sun", basePackage, dataSource, factoryBean.getObject());
-      SqlSessionMeta.collector.put(basePackage(), meta);
+      SqlSessionMeta.collector.put(basePackage, meta);
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     }
@@ -85,7 +85,7 @@ public abstract class PersistenceConfiguration {
     }
   }
 
-  protected DataSourceTransactionManager transactionManager(DataSource dataSource) {
+  protected PlatformTransactionManager transactionManager(DataSource dataSource) {
     DataSourceTransactionManager txManager = new DataSourceTransactionManager();
     txManager.setDataSource(dataSource);
     return txManager;
