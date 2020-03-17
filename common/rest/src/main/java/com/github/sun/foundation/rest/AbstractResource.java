@@ -1,9 +1,12 @@
 package com.github.sun.foundation.rest;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.github.sun.foundation.boot.utility.PropertyLoaders;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -38,11 +41,26 @@ public abstract class AbstractResource {
   public static class Response {
     public static final int OK = 200;
 
+    private static Properties props = new Properties();
+
+    static {
+      try {
+        props = PropertyLoaders.loadProperties("message.properties");
+      } catch (Throwable ex) {
+        log.warn(ex.getMessage(), ex);
+      }
+    }
+
+    @ApiModelProperty("Status code")
     public final int code;
+    @ApiModelProperty("Responsive message")
     public final String message;
 
     public Response(int code, String message) {
       this.code = code;
+      if (message == null) {
+        message = props.getProperty(String.valueOf(code));
+      }
       this.message = message;
     }
   }

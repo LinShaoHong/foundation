@@ -693,6 +693,10 @@ public interface Expression {
     return when(value != null);
   }
 
+  static Predicate nonEmpty(String value) {
+    return when(value != null && !value.trim().isEmpty());
+  }
+
   static Predicate when(boolean judge) {
     return expr -> judge ? expr : EMPTY;
   }

@@ -20,7 +20,7 @@ public interface QueryMapper<T> {
   T findById(@Param("id") Serializable id);
 
   @SelectProvider(type = Provider.class, method = "findByIds")
-  List<T> findByIds(@Param("template") Set<? extends Serializable> ids);
+  List<T> findByIds(@Param("ids") Set<? extends Serializable> ids);
 
   @SelectProvider(type = Provider.class, method = "count")
   int count();
@@ -48,7 +48,7 @@ public interface QueryMapper<T> {
       Class<?> clazz = (Class<?>) params.get("$RESULT_TYPE");
       SqlBuilder.Factory factory = factory(params);
       SqlBuilder sb = factory.create();
-      List<Object> ids = (List<Object>) params.get("ids");
+      Set<Object> ids = (Set<Object>) params.get("ids");
       if (ids.isEmpty()) {
         throw new IllegalArgumentException("ids is empty");
       }

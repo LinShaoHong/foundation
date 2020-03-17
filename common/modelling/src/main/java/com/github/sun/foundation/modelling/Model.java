@@ -65,6 +65,7 @@ public interface Model {
       };
     }
     return properties().stream()
+      .filter(Objects::nonNull)
       .filter(p -> p.name().equals(name))
       .findAny()
       .orElseThrow(() -> new IllegalArgumentException(name() + " unknown '" + name + "'"));

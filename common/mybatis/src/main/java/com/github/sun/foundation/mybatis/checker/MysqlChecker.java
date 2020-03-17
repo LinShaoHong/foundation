@@ -181,10 +181,7 @@ public class MysqlChecker implements Lifecycle {
           info.append(String.format("\n-- 字段'%s.%s'类型不正确,期望%s,实际是%s\n", table, c, types._1.toLowerCase(), field.type));
         }
       }
-      Set<String> keys = new HashSet<>(def.primaryKey());
-      def.indexes.forEach(i -> keys.addAll(i.keys));
-      boolean notNull = keys.contains(property.column()) ||
-        property.hasAnnotation(NotNull.class) || property.hasAnnotation(NotEmpty.class);
+      boolean notNull = property.hasAnnotation(NotNull.class) || property.hasAnnotation(NotEmpty.class);
       if (notNull && field.nullable && !field.defaultValue && !field.generated) {
         String sql = "ALTER TABLE " + table + " modify " + c + " " + field.columnType + " NOT NULL;";
         info.append(String.format("\n-- 字段'%s.%s'，不能允许为NULL 请执行以下sql修复该问题:\n%s\n", table, c, sql));

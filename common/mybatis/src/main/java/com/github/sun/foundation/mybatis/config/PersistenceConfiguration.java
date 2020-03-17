@@ -40,7 +40,11 @@ public abstract class PersistenceConfiguration {
     factoryBean.setConfigLocation(resolver.getResource(CONFIG_LOCATION));
     try {
       String basePackage = basePackage() == null ? Packages.group(getClass()) : basePackage();
-      SqlSessionMeta meta = SqlSessionMeta.build(CONFIG_LOCATION, "sun", basePackage, dataSource, factoryBean.getObject());
+      String url = ((DruidDataSource) dataSource).getRawJdbcUrl();
+      int i = url.lastIndexOf("/");
+      int j = url.lastIndexOf("?");
+      String database = url.substring(i + 1, j);
+      SqlSessionMeta meta = SqlSessionMeta.build(CONFIG_LOCATION, database, basePackage, dataSource, factoryBean.getObject());
       SqlSessionMeta.collector.put(basePackage, meta);
     } catch (Exception ex) {
       throw new RuntimeException(ex);
