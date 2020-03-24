@@ -9,43 +9,41 @@ import java.util.Properties;
 
 @UtilityClass
 public class PropertyLoaders {
-    public Properties loadProperties(String... resourcesPaths) {
-        Properties props = new Properties();
-        for (String location : resourcesPaths) {
-            try (InputStream is = getInputStream(location)) {
-                props.load(is);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
+  public Properties loadProperties(String... resourcesPaths) {
+    Properties props = new Properties();
+    for (String location : resourcesPaths) {
+      try (InputStream is = getInputStream(location)) {
+        if (is != null) {
+          props.load(is);
         }
-        return props;
+      } catch (IOException ex) {
+        throw new RuntimeException(ex);
+      }
     }
+    return props;
+  }
 
-    private ClassLoader getDefaultClassLoader() {
-        ClassLoader cl;
+  private ClassLoader getDefaultClassLoader() {
+    ClassLoader cl;
+    try {
+      cl = Thread.currentThread().getContextClassLoader();
+    } catch (Throwable ex) {
+      throw new RuntimeException(ex);
+    }
+    if (cl == null) {
+      cl = PropertyLoaders.class.getClassLoader();
+      if (cl == null) {
         try {
-            cl = Thread.currentThread().getContextClassLoader();
+          cl = ClassLoader.getSystemClassLoader();
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+          throw new RuntimeException(ex);
         }
-        if (cl == null) {
-            cl = PropertyLoaders.class.getClassLoader();
-            if (cl == null) {
-                try {
-                    cl = ClassLoader.getSystemClassLoader();
-                } catch (Throwable ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        }
-        return cl;
+      }
     }
+    return cl;
+  }
 
-    private InputStream getInputStream(String path) throws IOException {
-        InputStream is = getDefaultClassLoader().getResourceAsStream(path);
-        if (is == null) {
-            throw new FileNotFoundException(path + " cannot be opened because it does not exist");
-        }
-        return is;
-    }
+  private InputStream getInputStream(String path) throws IOException {
+    return getDefaultClassLoader().getResourceAsStream(path);
+  }
 }
