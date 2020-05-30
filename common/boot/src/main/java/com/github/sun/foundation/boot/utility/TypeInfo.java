@@ -68,10 +68,10 @@ public class TypeInfo {
     return new TypeParametersFinder().find(type, baseClass);
   }
 
-  private class TypeParametersFinder {
+  private static class TypeParametersFinder {
     private Class<?> c;
     private ParameterizedType pt;
-    private Map<String, Type> typeArguments = new HashMap<>();
+    private final Map<String, Type> typeArguments = new HashMap<>();
 
     private void parse(Type type) {
       if (type instanceof ParameterizedType) {

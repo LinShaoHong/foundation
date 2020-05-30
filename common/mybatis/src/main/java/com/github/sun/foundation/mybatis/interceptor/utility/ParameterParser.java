@@ -53,7 +53,7 @@ public class ParameterParser {
 
   @Data
   @Builder
-  private class ParamAnnotation {
+  private static class ParamAnnotation {
     private Param param;
     private Flatten flatten;
   }

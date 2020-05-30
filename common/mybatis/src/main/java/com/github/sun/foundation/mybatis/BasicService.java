@@ -2,7 +2,6 @@ package com.github.sun.foundation.mybatis;
 
 import com.github.sun.foundation.boot.utility.Iterators;
 import com.github.sun.foundation.sql.SqlBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -12,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class BasicService<K extends Serializable, V, M extends CompositeMapper<V>> {
-  @Autowired
+  @Resource
   protected M mapper;
 
   @Transactional

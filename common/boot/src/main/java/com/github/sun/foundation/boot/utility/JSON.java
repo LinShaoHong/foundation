@@ -153,7 +153,7 @@ public class JSON {
     return Valuer.of(node, path);
   }
 
-  public class Valuer {
+  public static class Valuer {
     private final JsonNode node;
     private final Path path;
 

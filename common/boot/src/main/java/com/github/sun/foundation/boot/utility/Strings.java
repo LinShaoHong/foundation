@@ -127,7 +127,7 @@ public class Strings {
     return new Parser();
   }
 
-  public class Parser implements AutoCloseable {
+  public static class Parser implements AutoCloseable {
     private int point;
     private int offset;
     private String input;
