@@ -5,6 +5,7 @@ import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ScanResult;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -79,8 +80,8 @@ public class Scanner {
         throw new RuntimeException(clazz.getName() + " is not a implementation class");
       }
       try {
-        return clazz.newInstance();
-      } catch (InstantiationException | IllegalAccessException ex) {
+        return clazz.getDeclaredConstructor().newInstance();
+      } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
         throw new RuntimeException(ex);
       }
     }

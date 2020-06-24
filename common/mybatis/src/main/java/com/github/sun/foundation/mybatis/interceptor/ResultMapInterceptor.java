@@ -24,6 +24,7 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.type.TypeHandler;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -131,8 +132,8 @@ public class ResultMapInterceptor extends BasicInterceptor {
       .collect(Collectors.toList());
     if (!handlers.isEmpty()) {
       try {
-        return (TypeHandler<?>) handlers.get(0).newInstance();
-      } catch (InstantiationException | IllegalAccessException ex) {
+        return (TypeHandler<?>) handlers.get(0).getDeclaredConstructor().newInstance();
+      } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
         throw new RuntimeException(ex);
       }
     }

@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -178,8 +179,8 @@ public class QuartzScheduler implements Scheduler {
 
     private <T> T newInstance(Class<T> clazz) {
       try {
-        return clazz.newInstance();
-      } catch (InstantiationException | IllegalAccessException ex) {
+        return clazz.getDeclaredConstructor().newInstance();
+      } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
         throw new RuntimeException(ex);
       }
     }

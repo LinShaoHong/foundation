@@ -354,7 +354,7 @@ public interface Model {
     @Override
     public Object getValue(Object obj) {
       if (field != null) {
-        boolean accessible = field.isAccessible();
+        boolean accessible = field.canAccess(obj);
         try {
           if (!accessible) {
             field.setAccessible(true);

@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 
 public class QuartzTest {
@@ -93,8 +94,8 @@ public class QuartzTest {
 
   private static <T> T newInstance(Class<T> clazz) {
     try {
-      return clazz.newInstance();
-    } catch (InstantiationException | IllegalAccessException ex) {
+      return clazz.getDeclaredConstructor().newInstance();
+    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
       ex.printStackTrace();
       throw new RuntimeException(ex);
     }

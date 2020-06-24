@@ -12,6 +12,7 @@ import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.postgresql.util.PGobject;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -136,8 +137,8 @@ public class TypeHandlerParser implements Converter.Parser, Lifecycle {
     private static Converter.Handler getHandler(String handlerClassName) {
       return cache.get(handlerClassName, () -> {
         try {
-          return (Converter.Handler) Class.forName(handlerClassName).newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+          return (Converter.Handler) Class.forName(handlerClassName).getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException ex) {
           throw new RuntimeException(ex);
         }
       });
