@@ -13,7 +13,7 @@ import java.security.NoSuchAlgorithmException;
 public class AES {
   public String encrypt(String value, String key) {
     try {
-      Cipher eCipher = eCipher = Cipher.getInstance("AES");
+      Cipher eCipher = Cipher.getInstance("AES");
       SecretKey secretKey = new SecretKeySpec(key.getBytes(), "AES");
       eCipher.init(Cipher.ENCRYPT_MODE, secretKey);
       byte[] utf8 = value.getBytes(StandardCharsets.UTF_8);
