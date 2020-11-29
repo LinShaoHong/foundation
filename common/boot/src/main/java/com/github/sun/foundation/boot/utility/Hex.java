@@ -61,8 +61,7 @@ public final class Hex {
     StringBuilder sb = new StringBuilder();
     int bits = 0;
     int n = 0;
-    for (int i = 0, len = buf.length; i < len; i++) {
-      byte b = buf[i];
+    for (byte b : buf) {
       n = (n << 8) | (b & 0xff);
       bits += 8;
       do {

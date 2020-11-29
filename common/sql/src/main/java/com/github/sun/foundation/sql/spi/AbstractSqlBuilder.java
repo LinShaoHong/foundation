@@ -216,8 +216,8 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
   }
 
   private static class Context {
-    private Map<String, From> allFroms = new HashMap<>();
-    private Map<String, Join> allJoins = new HashMap<>();
+    private final Map<String, From> allFroms = new HashMap<>();
+    private final Map<String, Join> allJoins = new HashMap<>();
   }
 
   private void putFrom(From from) {

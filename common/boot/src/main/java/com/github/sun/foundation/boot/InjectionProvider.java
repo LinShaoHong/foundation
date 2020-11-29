@@ -24,7 +24,7 @@ public interface InjectionProvider {
 
   class BinderImpl implements Binder, Property {
     private String name;
-    private Map<String, Object> properties = new HashMap<>();
+    private final Map<String, Object> properties = new HashMap<>();
 
     @Override
     public Binder named(String name) {

@@ -32,10 +32,9 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @ApplicationPath("/api")
-public abstract class JerseyApplication<A> extends ResourceConfig {
-  @SuppressWarnings("unchecked")
+public abstract class JerseyApplication extends ResourceConfig {
   public JerseyApplication(ApplicationContext context) {
-    Class<A> appClass = (Class<A>) getClass().getGenericSuperclass();
+    Class<?> appClass = (Class<?>) getClass().getGenericSuperclass();
     Bootstrap bootstrap = Bootstrap.build(appClass, context);
     bootstrap.startup();
     Runtime.getRuntime().addShutdownHook(new Thread(bootstrap::shutdown));

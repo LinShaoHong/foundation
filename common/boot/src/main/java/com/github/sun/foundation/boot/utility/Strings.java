@@ -87,7 +87,7 @@ public class Strings {
           sb.append("\\\"");
           break;
         case '\'':
-          sb.append("\\\'");
+          sb.append("\\'");
           break;
         case '\t':
           sb.append("\\t");
@@ -131,7 +131,7 @@ public class Strings {
     private int point;
     private int offset;
     private String input;
-    private Map<Pattern, Matcher> matcher = new HashMap<>();
+    private final Map<Pattern, Matcher> matcher = new HashMap<>();
 
     public Parser set(String input) {
       this.offset = 0;

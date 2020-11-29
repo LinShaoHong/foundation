@@ -8,7 +8,7 @@ import org.springframework.context.ApplicationContext;
 
 @EnableEurekaClient
 @SpringBootApplication
-public class FooServer extends JerseyApplication<FooServer> {
+public class FooServer extends JerseyApplication {
   public FooServer(ApplicationContext context) {
     super(context);
   }

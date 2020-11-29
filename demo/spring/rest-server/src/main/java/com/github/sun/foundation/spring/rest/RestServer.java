@@ -6,7 +6,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 
 @SpringBootApplication
-public class RestServer extends JerseyApplication<RestServer> {
+public class RestServer extends JerseyApplication {
   public RestServer(ApplicationContext context) {
     super(context);
   }

@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 @UtilityClass
 public class Pinyins {
-  private Set<String> surnames;
+  private final Set<String> surnames;
 
   static {
     String names = IO.read(Pinyins.class.getResourceAsStream("/surname.txt"));

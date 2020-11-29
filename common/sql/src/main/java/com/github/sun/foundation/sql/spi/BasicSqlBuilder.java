@@ -431,12 +431,10 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
     @Override
     public Void onUnaryExpression(UnaryExpression expr) {
       Operator op = expr.getOperator();
-      switch (op) {
-        case NOT:
-          sb.append(" NOT ");
-          break;
-        default:
-          throw new IllegalArgumentException();
+      if (op == Operator.NOT) {
+        sb.append(" NOT ");
+      } else {
+        throw new IllegalArgumentException();
       }
       Expression operand = expr.getOperand();
       buildWithParenthesis(operand, op.priority > operand.priority());
