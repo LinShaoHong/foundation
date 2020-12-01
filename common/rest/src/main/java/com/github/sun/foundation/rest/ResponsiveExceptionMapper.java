@@ -12,7 +12,7 @@ import java.util.List;
 @Slf4j
 @Provider
 public class ResponsiveExceptionMapper implements ExceptionMapper<ResponsiveException> {
-  private Helper helper = new Helper();
+  private final Helper helper = new Helper();
 
   @Override
   public javax.ws.rs.core.Response toResponse(ResponsiveException exception) {
@@ -21,7 +21,7 @@ public class ResponsiveExceptionMapper implements ExceptionMapper<ResponsiveExce
 
   @Provider
   public static class MultiExceptionMapper extends AbstractResource implements ExceptionMapper<MultiException> {
-    private Helper helper = new Helper();
+    private final Helper helper = new Helper();
 
     @Override
     public javax.ws.rs.core.Response toResponse(MultiException ex) {
