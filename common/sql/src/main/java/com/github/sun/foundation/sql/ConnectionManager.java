@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  * @Date: 12:04 PM 2019-07-10
  */
 public class ConnectionManager {
-  private Supplier<Connection> connProvider;
+  private final Supplier<Connection> connProvider;
   private final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
   private ConnectionManager(DataSource dataSource) {
