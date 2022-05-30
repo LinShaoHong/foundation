@@ -6,7 +6,7 @@ generateGrammarSource {
   arguments += ["-no-listener", "-long-messages"]
 }
 dependencies {
-  compile project(":$rootName-boot")
+  api project(":$rootName-boot")
   antlr "org.antlr:antlr4:$vers.antlr4"
 }
 

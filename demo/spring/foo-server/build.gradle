@@ -1,6 +1,6 @@
 dependencies {
-  compile project(":$rootName-rest")
-  compile "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client"
+  api project(":$rootName-rest")
+  api "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client"
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_springcloud.gradle")

@@ -1,26 +1,26 @@
 dependencies {
-  compile project(":$rootName-boot")
+  api project(":$rootName-boot")
 
-  compile "javax.xml.bind:jaxb-api:2.3.1"
-  compile "com.sun.xml.bind:jaxb-impl:2.3.1"
-  compile "org.glassfish.jaxb:jaxb-runtime:2.3.1"
-  
-  compile "org.springframework:spring-tx:$vers.spring"
-  compile("org.glassfish.jersey.core:jersey-server:$vers.jersey") {
+  api "javax.xml.bind:jaxb-api:2.3.1"
+  api "com.sun.xml.bind:jaxb-impl:2.3.1"
+  api "org.glassfish.jaxb:jaxb-runtime:2.3.1"
+
+  api "org.springframework:spring-tx:$vers.spring"
+  api("org.glassfish.jersey.core:jersey-server:$vers.jersey") {
     exclude group: 'javax.validation', module: 'validation-api'
   }
 
-  compile "org.glassfish.jersey.inject:jersey-hk2:$vers.jersey"
-  compile "org.glassfish.jersey.core:jersey-common:$vers.jersey"
-  compile "org.glassfish.jersey.media:jersey-media-sse:$vers.jersey"
-  compile "org.glassfish.jersey.media:jersey-media-multipart:$vers.jersey"
-  compile("org.glassfish.jersey.media:jersey-media-json-jackson:$vers.jersey") {
+  api "org.glassfish.jersey.inject:jersey-hk2:$vers.jersey"
+  api "org.glassfish.jersey.core:jersey-common:$vers.jersey"
+  api "org.glassfish.jersey.media:jersey-media-sse:$vers.jersey"
+  api "org.glassfish.jersey.media:jersey-media-multipart:$vers.jersey"
+  api("org.glassfish.jersey.media:jersey-media-json-jackson:$vers.jersey") {
     exclude group: 'com.fasterxml.jackson.module', module: 'jackson-module-jaxb-annotations'
   }
 
   // swagger
-  compile "io.springfox:springfox-swagger-common:$vers.springfox"
-  compile("io.swagger:swagger-jersey2-jaxrs:$vers.swagger2") {
+  api "io.springfox:springfox-swagger-common:$vers.springfox"
+  api("io.swagger:swagger-jersey2-jaxrs:$vers.swagger2") {
     exclude group: 'org.yaml', module: 'snakeyaml'
     exclude group: 'javax.validation', module: 'validation-api'
     exclude group: 'org.glassfish.jersey.media', module: 'jersey-media-multipart'
