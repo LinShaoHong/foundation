@@ -57,11 +57,7 @@ public class MysqlChecker implements Lifecycle {
       // collect table collations
       tableCollations = new HashMap<>();
       SqlBuilder sb = factory.create();
-      SqlBuilder.Template template = sb.from("INFORMATION_SCHEMA.TABLES")
-        .where(sb.field("TABLE_SCHEMA").eq(def.schema))
-        .select(sb.field("TABLE_NAME"))
-        .select(sb.field("TABLE_COLLATION"))
-        .template();
+      SqlBuilder.Template template = sb.from("INFORMATION_SCHEMA.TABLES").where(sb.field("TABLE_SCHEMA").eq(def.schema)).select(sb.field("TABLE_NAME")).select(sb.field("TABLE_COLLATION")).template();
       connectionManager.fetch(template, rs -> {
         while (rs.next()) {
           tableCollations.put(rs.getString(1), rs.getString(2));
@@ -81,28 +77,13 @@ public class MysqlChecker implements Lifecycle {
     if (tableFields == null) {
       tableFields = new HashMap<>();
       SqlBuilder sb = factory.create();
-      SqlBuilder.Template template = sb.from("INFORMATION_SCHEMA.COLUMNS")
-        .where(sb.field("TABLE_SCHEMA").eq(def.schema))
-        .select(sb.field("TABLE_NAME"))
-        .select(sb.field("COLUMN_NAME"))
-        .select(sb.field("IS_NULLABLE"))
-        .select(sb.field("DATA_TYPE"))
-        .select(sb.field("COLUMN_TYPE"))
-        .select(sb.field("COLUMN_DEFAULT"))
-        .select(sb.field("GENERATION_EXPRESSION"))
-        .template();
+      SqlBuilder.Template template = sb.from("INFORMATION_SCHEMA.COLUMNS").where(sb.field("TABLE_SCHEMA").eq(def.schema)).select(sb.field("TABLE_NAME")).select(sb.field("COLUMN_NAME")).select(sb.field("IS_NULLABLE")).select(sb.field("DATA_TYPE")).select(sb.field("COLUMN_TYPE")).select(sb.field("COLUMN_DEFAULT")).select(sb.field("GENERATION_EXPRESSION")).template();
       connectionManager.fetch(template, rs -> {
         while (rs.next()) {
           String tableName = rs.getString("TABLE_NAME");
           Map<String, Field> cols = tableFields.computeIfAbsent(tableName, x -> new HashMap<>());
           String col = rs.getString("COLUMN_NAME");
-          cols.put(col, new Field(
-            rs.getString("DATA_TYPE"),
-            rs.getString("COLUMN_TYPE"),
-            !"NO".equals(rs.getString("IS_NULLABLE")),
-            rs.getString("COLUMN_DEFAULT") != null,
-            !rs.getString("GENERATION_EXPRESSION").isEmpty()
-          ));
+          cols.put(col, new Field(rs.getString("DATA_TYPE"), rs.getString("COLUMN_TYPE"), !"NO".equals(rs.getString("IS_NULLABLE")), rs.getString("COLUMN_DEFAULT") != null, !rs.getString("GENERATION_EXPRESSION").isEmpty()));
         }
       });
     }
@@ -124,10 +105,7 @@ public class MysqlChecker implements Lifecycle {
     existColumns.removeAll(redundant);
     existColumns.forEach(c -> {
       Field field = fields.get(c);
-      Model.Property property = def.model.persistenceProperties().stream()
-        .filter(p -> p.column().equalsIgnoreCase(c))
-        .findFirst()
-        .orElseThrow(IllegalStateException::new);
+      Model.Property property = def.model.persistenceProperties().stream().filter(p -> p.column().equalsIgnoreCase(c)).findFirst().orElseThrow(IllegalStateException::new);
       JDBCType jdbcType;
       int length = 0;
       switch (property.kind()) {
@@ -198,22 +176,13 @@ public class MysqlChecker implements Lifecycle {
         String tp = type(type, length);
         return Tuple.of(tp, Collections.singletonList(tp));
       case INTEGER:
-        return Tuple.of(type(JDBCType.INTEGER, length),
-          Arrays.asList(type(JDBCType.SMALLINT, length),
-            type(JDBCType.TINYINT, length),
-            type(JDBCType.INTEGER, length)));
+        return Tuple.of(type(JDBCType.INTEGER, length), Arrays.asList(type(JDBCType.SMALLINT, length), type(JDBCType.TINYINT, length), type(JDBCType.INTEGER, length)));
       case DOUBLE:
       case DECIMAL:
         tp = type(JDBCType.DECIMAL, length);
         return Tuple.of(tp, Collections.singletonList(tp));
       case VARCHAR:
-        return Tuple.of(type(JDBCType.VARCHAR, length),
-          Arrays.asList(type(JDBCType.CHAR, length),
-            type(JDBCType.VARCHAR, length),
-            type(JDBCType.NCHAR, length),
-            type(JDBCType.NVARCHAR, length),
-            type(JDBCType.LONGVARCHAR, length),
-            type(JDBCType.LONGNVARCHAR, length)));
+        return Tuple.of(type(JDBCType.VARCHAR, length), Arrays.asList(type(JDBCType.CHAR, length), type(JDBCType.VARCHAR, length), type(JDBCType.NCHAR, length), type(JDBCType.NVARCHAR, length), type(JDBCType.LONGVARCHAR, length), type(JDBCType.LONGNVARCHAR, length)));
       default:
         throw new IllegalStateException("unsupported jdbc type: " + type.getName());
     }
@@ -262,15 +231,7 @@ public class MysqlChecker implements Lifecycle {
     if (tableIndexes == null) {
       tableIndexes = new HashMap<>();
       SqlBuilder sb = factory.create();
-      SqlBuilder.Template template = sb.from("INFORMATION_SCHEMA.STATISTICS")
-        .where(sb.field("TABLE_SCHEMA").eq(def.schema))
-        .asc("TABLE_NAME")
-        .asc("INDEX_NAME")
-        .asc("SEQ_IN_INDEX")
-        .select(sb.field("TABLE_NAME"))
-        .select(sb.field("INDEX_NAME"))
-        .select(sb.field("COLUMN_NAME"))
-        .template();
+      SqlBuilder.Template template = sb.from("INFORMATION_SCHEMA.STATISTICS").where(sb.field("TABLE_SCHEMA").eq(def.schema)).asc("TABLE_NAME").asc("INDEX_NAME").asc("SEQ_IN_INDEX").select(sb.field("TABLE_NAME")).select(sb.field("INDEX_NAME")).select(sb.field("COLUMN_NAME")).template();
       connectionManager.fetch(template, rs -> {
         while (rs.next()) {
           String tableName = rs.getString("TABLE_NAME");
@@ -294,9 +255,7 @@ public class MysqlChecker implements Lifecycle {
         info.append(String.format("\n-- 数据表'%s'缺少索引 '%s' 请执行以下语句修正该问题:\n%s\n", table, index.name, sql));
       } else {
         if (!index.keys.equals(actual)) {
-          info.append(String.format("\n-- 索引'%s.%s'字段不正确,期望%s,实际是%s\n", table, index.name,
-            Iterators.mkString(index.keys, "(", ", ", ")"),
-            Iterators.mkString(actual, "(", ", ", ")")));
+          info.append(String.format("\n-- 索引'%s.%s'字段不正确,期望%s,实际是%s\n", table, index.name, Iterators.mkString(index.keys, "(", ", ", ")"), Iterators.mkString(actual, "(", ", ", ")")));
         }
       }
     });
@@ -313,45 +272,40 @@ public class MysqlChecker implements Lifecycle {
           throw new RuntimeException(ex);
         }
       }
-      SqlSessionMeta.collector.values()
-        .forEach(meta -> {
-          Collection<Class<?>> mappers = Scanner.getClassesWithAnnotation(Mapper.class)
-            .stream().map(Scanner.ClassTag::runtimeClass).collect(Collectors.toList());
-          List<TableDef> tables = mappers.stream().map(mapperClass -> {
-            Class<?> entityClass = ResultMapInterceptor.findEntityClass(mapperClass);
-            if (entityClass != null) {
-              Model model = Model.from(entityClass);
-              String name = model.tableName();
-              if (name != null) {
-                List<TableDef.Index> indices = Stream.of(mapperClass.getDeclaredMethods())
-                  .map(m -> {
-                    List<String> keys = IndexParser.parseKeyName(m.getName());
-                    if (!keys.isEmpty()) {
-                      StringBuilder s = new StringBuilder(model.tableName()).append("_idx");
-                      keys.forEach(k -> s.append("_").append(k));
-                      return new TableDef.Index(s.toString(), keys);
-                    }
-                    return null;
-                  })
-                  .filter(Objects::nonNull)
-                  .collect(Collectors.toList());
-                Set<String> idxSet = new HashSet<>();
-                indices.forEach(idx -> idxSet.add(idx.name));
-                indices.removeIf(idx -> idxSet.stream().anyMatch(v -> v.length() > idx.name.length() && v.startsWith(idx.name)));
-                return new TableDef(meta.database(), model, indices.stream().distinct().collect(Collectors.toList()));
-              }
+      SqlSessionMeta.collector.values().forEach(meta -> {
+        Collection<Class<?>> mappers = Scanner.getClassesWithAnnotation(Mapper.class).stream().map(Scanner.ClassTag::runtimeClass).collect(Collectors.toList());
+        List<TableDef> tables = mappers.stream().map(mapperClass -> {
+          Class<?> entityClass = ResultMapInterceptor.findEntityClass(mapperClass);
+          if (entityClass != null) {
+            Model model = Model.from(entityClass);
+            String name = model.tableName();
+            if (name != null) {
+              List<TableDef.Index> indices = Stream.of(mapperClass.getDeclaredMethods()).map(m -> {
+                List<String> keys = IndexParser.parseKeyName(m.getName());
+                if (!keys.isEmpty()) {
+                  StringBuilder s = new StringBuilder(model.tableName()).append("_idx");
+                  keys.forEach(k -> s.append("_").append(k));
+                  return new TableDef.Index(s.toString(), keys);
+                }
+                return null;
+              }).filter(Objects::nonNull).collect(Collectors.toList());
+              Set<String> idxSet = new HashSet<>();
+              indices.forEach(idx -> idxSet.add(idx.name));
+              indices.removeIf(idx -> idxSet.stream().anyMatch(v -> v.length() > idx.name.length() && v.startsWith(idx.name)));
+              return new TableDef(meta.database(), model, indices.stream().distinct().collect(Collectors.toList()));
             }
-            return null;
-          }).filter(Objects::nonNull).distinct().collect(Collectors.toList());
-          ConnectionManager connectionManager = ConnectionManager.build(meta.dataSource());
-          if (!tables.isEmpty()) {
-            sb.append(check(tables, connectionManager));
           }
-        });
+          return null;
+        }).filter(Objects::nonNull).distinct().collect(Collectors.toList());
+        ConnectionManager connectionManager = ConnectionManager.build(meta.dataSource());
+        if (!tables.isEmpty()) {
+          sb.append(check(tables, connectionManager));
+        }
+      });
       if (sb.length() > 0) {
         sb.prepend("\n\n--------------------------------------------- 数据表检查 -------------------------------------------\n");
         sb.append("\n--------------------------------------------------------------------------------------------------------");
-        log.info("表结构存在错误请先修复" + sb.toString());
+        log.info("表结构存在错误请先修复" + sb);
       }
     }).start();
   }
@@ -373,8 +327,7 @@ public class MysqlChecker implements Lifecycle {
     Set<String> columns = new HashSet<>();
     def.model.persistenceProperties().forEach(p -> {
       columns.add(p.column());
-      boolean notNull = keys.contains(p.column()) ||
-        p.hasAnnotation(NotNull.class) || p.hasAnnotation(NotEmpty.class);
+      boolean notNull = keys.contains(p.column()) || p.hasAnnotation(NotNull.class) || p.hasAnnotation(NotEmpty.class);
       switch (p.kind()) {
         case NUMBER:
           Type javaType = p.javaType();
@@ -388,7 +341,9 @@ public class MysqlChecker implements Lifecycle {
           } else if (javaType == float.class || javaType == double.class || javaType == Double.class || javaType == Float.class) {
             sb.column(p.column(), JDBCType.DOUBLE, 0, 0, notNull);
           } else if (javaType == BigDecimal.class) {
-            sb.column(p.column(), JDBCType.DECIMAL, 16, 2, notNull);
+            Column c = p.field().getAnnotation(Column.class);
+            int scale = c != null ? c.scale() : 2;
+            sb.column(p.column(), JDBCType.DECIMAL, 18, scale, notNull);
           } else if (javaType == BigInteger.class) {
             sb.column(p.column(), JDBCType.DECIMAL, 32, 0, notNull);
           } else {
@@ -399,8 +354,10 @@ public class MysqlChecker implements Lifecycle {
           sb.column(p.column(), JDBCType.BOOLEAN, 0, 0, true);
           break;
         case TEXT:
-          Column a = p.field().getAnnotation(Column.class);
-          sb.column(p.column(), JDBCType.VARCHAR, a == null ? 255 : a.length(), 0, notNull);
+          Column c = p.field().getAnnotation(Column.class);
+          boolean varchar = c != null && c.length() <= 255;
+          int length = c != null ? c.length() : 255;
+          sb.column(p.column(), varchar ? JDBCType.VARCHAR : JDBCType.NVARCHAR, length, 0, notNull);
           break;
         case ENUM:
           sb.column(p.column(), JDBCType.VARCHAR, 20, 0, true);

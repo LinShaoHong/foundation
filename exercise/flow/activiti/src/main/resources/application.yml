@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: Flowable-Server
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/activiti?serverTimezone=UTC&nullCatalogMeansCurrent=true
+    username: root
+    password: root
+server:
+  port: 13866
