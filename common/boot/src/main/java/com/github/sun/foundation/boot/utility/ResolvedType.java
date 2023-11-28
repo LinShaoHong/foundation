@@ -8,10 +8,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * @Author LinSH
- * @Date: 3:47 PM 2019-03-02
- */
 public interface ResolvedType extends Annotated {
   default String name() {
     return rawClass().getName();

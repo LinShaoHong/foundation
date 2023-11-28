@@ -1,9 +1,5 @@
 package com.github.sun.foundation.boot.utility;
 
-/**
- * @Author LinSH
- * @Date: 12:20 AM 2019-07-11
- */
 public class PrependStringBuilder implements CharSequence {
   private char[] buffer;
   private int start;

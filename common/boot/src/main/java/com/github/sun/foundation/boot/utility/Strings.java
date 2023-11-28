@@ -10,10 +10,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * @Author LinSH
- * @Date: 10:43 AM 2019-03-01
- */
 @UtilityClass
 public class Strings {
   public String camelCaseToUnderScore(String name, boolean toLower) {

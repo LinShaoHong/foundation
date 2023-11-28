@@ -2,10 +2,6 @@ package com.github.sun.foundation.boot.utility;
 
 import lombok.experimental.UtilityClass;
 
-/**
- * @Author LinSH
- * @Date: 11:30 AM 2019-07-11
- */
 @UtilityClass
 public class Packages {
   public String group(Class<?> c) {

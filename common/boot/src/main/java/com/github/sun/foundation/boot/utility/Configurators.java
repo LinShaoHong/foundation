@@ -2,10 +2,6 @@ package com.github.sun.foundation.boot.utility;
 
 import lombok.experimental.UtilityClass;
 
-/**
- * @Author LinSH
- * @Date: 11:37 AM 2019-07-11
- */
 @UtilityClass
 public class Configurators {
   public String renderClasses(Iterable<Class<?>> classes) {

@@ -8,10 +8,6 @@ import java.lang.reflect.TypeVariable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * @Author LinSH
- * @Date: 3:46 PM 2019-03-02
- */
 @UtilityClass
 public class TypeInfo {
   /**

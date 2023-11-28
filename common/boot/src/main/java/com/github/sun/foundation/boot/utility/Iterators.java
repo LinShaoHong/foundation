@@ -11,10 +11,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-/**
- * @Author LinSH
- * @Date: 11:22 AM 2019-04-25
- */
 @UtilityClass
 public class Iterators {
   public <A, B> Iterable<B> map(Iterable<A> values, Function<A, B> func) {
