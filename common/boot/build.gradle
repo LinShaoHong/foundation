@@ -12,6 +12,7 @@ dependencies {
   api "com.fasterxml.jackson.module:jackson-module-paranamer:$vers.jackson"
 
   api "com.google.guava:guava:$vers.guava"
+  api 'com.github.ben-manes.caffeine:caffeine:3.1.8'
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")
