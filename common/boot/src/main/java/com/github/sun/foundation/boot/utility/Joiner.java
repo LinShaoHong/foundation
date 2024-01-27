@@ -236,7 +236,7 @@ public class Joiner {
             if (value != null) {
               if (p.retHandler.getClass() != Ref.RetDefault.class) {
                 value = p.getRetHandler().apply(value);
-              } else if (!StringUtils.isEmpty(p.getSelect())) {
+              } else if (StringUtils.hasText(p.getSelect())) {
                 String select = p.getSelect();
                 if (value instanceof Collection) {
                   value = ((Collection<?>) value).stream()
@@ -272,7 +272,7 @@ public class Joiner {
         if (result != null) {
           if (p.retHandler.getClass() != Ref.RetDefault.class) {
             result = p.getRetHandler().apply(result);
-          } else if (!StringUtils.isEmpty(p.getSelect())) {
+          } else if (StringUtils.hasText(p.getSelect())) {
             result = getValue(result, p.getSelect());
           }
           setValue(v, p.field, result);
