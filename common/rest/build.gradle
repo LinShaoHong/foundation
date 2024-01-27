@@ -17,15 +17,6 @@ dependencies {
   api("org.glassfish.jersey.media:jersey-media-json-jackson:$vers.jersey") {
     exclude group: 'com.fasterxml.jackson.module', module: 'jackson-module-jaxb-annotations'
   }
-
-  // swagger
-  api "io.springfox:springfox-swagger-common:$vers.springfox"
-  api("io.swagger:swagger-jersey2-jaxrs:$vers.swagger2") {
-    exclude group: 'org.yaml', module: 'snakeyaml'
-    exclude group: 'javax.validation', module: 'validation-api'
-    exclude group: 'org.glassfish.jersey.media', module: 'jersey-media-multipart'
-    exclude group: 'org.glassfish.jersey.containers', module: 'jersey-container-servlet-core'
-  }
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")

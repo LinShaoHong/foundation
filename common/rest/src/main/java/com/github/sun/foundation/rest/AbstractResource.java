@@ -2,7 +2,6 @@ package com.github.sun.foundation.rest;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.github.sun.foundation.boot.utility.PropertyLoaders;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -51,9 +50,7 @@ public abstract class AbstractResource {
       }
     }
 
-    @ApiModelProperty("Status code")
     public final int code;
-    @ApiModelProperty("Responsive message")
     public final String message;
 
     public Response(int code, String message) {
