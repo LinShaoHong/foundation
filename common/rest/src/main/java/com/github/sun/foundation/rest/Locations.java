@@ -13,7 +13,7 @@ public class Locations {
         JsonNode node = JerseyClient.of()
           .property(ClientProperties.READ_TIMEOUT, 500)
           .property(ClientProperties.CONNECT_TIMEOUT, 500)
-          .target("http://ip-api.com/json/" + ip + "?lang=zh-CN&fields=status,country,city")
+          .target("http://ip-api.com/json?ip=" + ip + "&lang=zh-CN&fields=status,country,city")
           .request()
           .get()
           .readEntity(JsonNode.class);
