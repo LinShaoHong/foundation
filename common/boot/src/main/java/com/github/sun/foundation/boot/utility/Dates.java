@@ -19,8 +19,8 @@ public class Dates {
   private final long ONE_WEEK = 604800000L;
 
   private final String ONE_SECOND_AGO = "秒前";
-  private final String ONE_MINUTE_AGO = "分鍾前";
-  private final String ONE_HOUR_AGO = "小時前";
+  private final String ONE_MINUTE_AGO = "分钟前";
+  private final String ONE_HOUR_AGO = "小时前";
   private final String ONE_DAY_AGO = "天前";
   private final String ONE_MONTH_AGO = "月前";
   private final String ONE_YEAR_AGO = "年前";
@@ -28,8 +28,7 @@ public class Dates {
   public String simpleTime(Date date) {
     long delta = new Date().getTime() - date.getTime();
     if (delta < ONE_MINUTE) {
-      long seconds = toSeconds(delta);
-      return (seconds <= 0 ? 1 : seconds) + ONE_SECOND_AGO;
+      return "刚刚";
     }
     if (delta < 45L * ONE_MINUTE) {
       long minutes = toMinutes(delta);
