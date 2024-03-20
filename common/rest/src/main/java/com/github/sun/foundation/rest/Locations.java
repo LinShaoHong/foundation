@@ -13,7 +13,8 @@ public class Locations {
         JsonNode node = JerseyClient.of()
           .property(ClientProperties.READ_TIMEOUT, 3000)
           .property(ClientProperties.CONNECT_TIMEOUT, 3000)
-          .target("https://webapi-pc.meitu.com/common/ip_location?ip=" + ip)
+          .target("https://webapi-pc.meitu.com/common/ip_location")
+          .queryParam("ip", ip)
           .request()
           .get()
           .readEntity(JsonNode.class);
