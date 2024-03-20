@@ -13,16 +13,16 @@ public class Locations {
         JsonNode node = JerseyClient.of()
           .property(ClientProperties.READ_TIMEOUT, 3000)
           .property(ClientProperties.CONNECT_TIMEOUT, 3000)
-          .target("http://ip-api.com/json/" + ip + "?lang=zh-CN&fields=status,country,city,regionName")
+          .target("https://webapi-pc.meitu.com/common/ip_location?ip=" + ip)
           .request()
           .get()
           .readEntity(JsonNode.class);
-        String status = node.get("status").asText();
-        if ("success".equals(status)) {
-          String city = node.get("city").asText();
-          String regionName = node.get("regionName").asText();
-          String country = node.get("country").asText();
-          location = country + ":" + regionName + ":" + city;
+        int code = node.get("code").asInt();
+        if (code == 0) {
+          String city = node.get("data").get(ip).get("city").asText();
+          String province = node.get("data").get(ip).get("province").asText();
+          String nation = node.get("data").get(ip).get("nation").asText();
+          location = nation + ":" + province + ":" + city;
         }
       } catch (Throwable ex) {
         // do nothing
