@@ -27,7 +27,8 @@ public enum DBType {
   public static DBType get() {
     DBType dbType = context.get();
     if (dbType == null) {
-      throw new IllegalStateException("Can not find DBType from context.");
+//      throw new IllegalStateException("Can not find DBType from context.");
+      return DBType.MYSQL;
     }
     return dbType;
   }
