@@ -42,6 +42,7 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
   protected boolean count;
   protected boolean forUpdate;
   protected boolean insert;
+  protected boolean replace;
   protected boolean createTable;
   protected Expression subQueryExpressionForInsertion;
   protected boolean delete;
@@ -117,6 +118,7 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
       this.count = delegated.count;
       this.forUpdate = delegated.forUpdate;
       this.insert = delegated.insert;
+      this.replace = delegated.replace;
       this.subQueryExpressionForInsertion = delegated.subQueryExpressionForInsertion;
       this.delete = delegated.delete;
       this.updateSets = delegated.updateSets;
@@ -398,6 +400,19 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
   @Override
   public TemplateBuilder insert(Expression subQueryExpression) {
     this.insert = true;
+    this.subQueryExpressionForInsertion = subQueryExpression;
+    return this;
+  }
+
+  @Override
+  public UpdateAble replace() {
+    this.replace = true;
+    return this;
+  }
+
+  @Override
+  public TemplateBuilder replace(Expression subQueryExpression) {
+    this.replace = true;
     this.subQueryExpressionForInsertion = subQueryExpression;
     return this;
   }
@@ -757,11 +772,13 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
         }
         if (delete) {
           template = buildDeleteTemplate(from, deletes, joins, condition);
-        } else if (insert && (subQueryExpressionForInsertion != null || (updateSets != null && !updateSets.isEmpty()))) {
+        } else if ((insert || replace) && (subQueryExpressionForInsertion != null || (updateSets != null && !updateSets.isEmpty()))) {
           if (updateSets != null) {
             updateSets.removeIf(Map::isEmpty);
           }
-          template = buildInsertTemplate(from, subQueryExpressionForInsertion, updateSets);
+          template = insert ?
+            buildInsertTemplate(from, subQueryExpressionForInsertion, updateSets) :
+            buildReplaceTemplate(from, subQueryExpressionForInsertion, updateSets);
         } else if (updateSets != null && !updateSets.isEmpty()) {
           updateSets.removeIf(Map::isEmpty);
           template = buildUpdateTemplate(from, joins, condition, updateSets);
@@ -799,6 +816,8 @@ public abstract class AbstractSqlBuilder implements SqlBuilder.StatelessSqlBuild
   protected abstract Template buildCreateTable(String table, List<Column> columns, List<String> primaryKeys, List<Index> indexes);
 
   protected abstract Template buildInsertTemplate(From from, Expression subQueryExpressionForInsertion, List<Map<String, Expression>> updateSets);
+
+  protected abstract Template buildReplaceTemplate(From from, Expression subQueryExpressionForInsertion, List<Map<String, Expression>> updateSets);
 
   protected abstract Template buildDeleteTemplate(From from, List<String> deletes, List<Join> joins, Expression condition);
 

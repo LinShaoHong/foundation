@@ -447,7 +447,11 @@ public interface SqlBuilder {
   interface FilterAble extends ModifyAble {
     UpdateAble insert();
 
+    UpdateAble replace();
+
     TemplateBuilder insert(Expression subQueryExpression);
+
+    TemplateBuilder replace(Expression subQueryExpression);
 
     FilterAble where(Expression condition);
 

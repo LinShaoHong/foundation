@@ -22,6 +22,12 @@ public interface WriteMapper<T> {
   @InsertProvider(type = Provider.class, method = "insert")
   int insert(@Param("value") T value);
 
+  @InsertProvider(type = Provider.class, method = "replaceAll")
+  int replaceAll(@Param("values") List<T> values);
+
+  @InsertProvider(type = Provider.class, method = "replace")
+  int replace(@Param("value") T value);
+
   @UpdateProvider(type = Provider.class, method = "updateAll")
   int updateAll(@Param("values") List<T> values);
 
@@ -42,7 +48,6 @@ public interface WriteMapper<T> {
 
   @SuppressWarnings("unchecked")
   class Provider {
-
     public String insertAll(Map<String, Object> params) {
       List<Object> values = (List<Object>) params.get("values");
       SqlBuilder.Template template = getRunner(params).insert(values);
@@ -52,6 +57,18 @@ public interface WriteMapper<T> {
     public String insert(Map<String, Object> params) {
       Object value = params.get("value");
       SqlBuilder.Template template = getRunner(params).insert(value);
+      return reset(params, template);
+    }
+
+    public String replaceAll(Map<String, Object> params) {
+      List<Object> values = (List<Object>) params.get("values");
+      SqlBuilder.Template template = getRunner(params).replace(values);
+      return reset(params, template);
+    }
+
+    public String replace(Map<String, Object> params) {
+      Object value = params.get("value");
+      SqlBuilder.Template template = getRunner(params).replace(value);
       return reset(params, template);
     }
 
@@ -96,9 +113,9 @@ public interface WriteMapper<T> {
       SqlBuilder.Factory factory = factory(params);
       SqlBuilder sb = factory.create();
       SqlBuilder.Template template = sb.from(clazz)
-          .where(ids.size() == 1 ? sb.field(id).eq(ids.get(0)) : sb.field(id).in(ids))
-          .delete()
-          .template();
+        .where(ids.size() == 1 ? sb.field(id).eq(ids.get(0)) : sb.field(id).in(ids))
+        .delete()
+        .template();
       return reset(params, template);
     }
 

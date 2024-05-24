@@ -20,6 +20,15 @@ public class CommandBackend<V> implements CommandRunner<V> {
 
   @Override
   public SqlBuilder.Template insert(Iterable<V> values) {
+    return insert(values, true);
+  }
+
+  @Override
+  public SqlBuilder.Template replace(Iterable<V> values) {
+    return insert(values, false);
+  }
+
+  private SqlBuilder.Template insert(Iterable<V> values, boolean insert) {
     Collection<V> arr = Iterators.asCollection(values);
     if (arr.isEmpty()) {
       throw new IllegalArgumentException("values is empty");
@@ -27,7 +36,7 @@ public class CommandBackend<V> implements CommandRunner<V> {
     Class<?> clazz = values.iterator().next().getClass();
     Model model = Model.from(clazz);
     SqlBuilder sb = factory.create();
-    SqlBuilder.UpdateAble insertAble = sb.from(clazz).insert();
+    SqlBuilder.UpdateAble insertAble = insert ? sb.from(clazz).insert() : sb.from(clazz).replace();
     arr.forEach(value -> {
       model.persistenceProperties().forEach(p -> insertAble.set(p.name(), p.getValue(value)));
       insertAble.ending();

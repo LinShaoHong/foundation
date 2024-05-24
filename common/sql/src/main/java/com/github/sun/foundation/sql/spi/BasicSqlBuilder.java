@@ -62,8 +62,17 @@ public abstract class BasicSqlBuilder extends AbstractSqlBuilder {
 
   @Override
   protected Template buildInsertTemplate(From from, Expression subQueryExpressionForInsertion, List<Map<String, Expression>> updateSets) {
+    return buildInsertTemplate(from, subQueryExpressionForInsertion, updateSets, true);
+  }
+
+  @Override
+  protected Template buildReplaceTemplate(From from, Expression subQueryExpressionForInsertion, List<Map<String, Expression>> updateSets) {
+    return buildInsertTemplate(from, subQueryExpressionForInsertion, updateSets, false);
+  }
+
+  protected Template buildInsertTemplate(From from, Expression subQueryExpressionForInsertion, List<Map<String, Expression>> updateSets, boolean insert) {
     SqlTemplate.Builder sb = SqlTemplate.newBuilder(counter::next);
-    sb.append("INSERT INTO ");
+    sb.append(insert ? "INSERT INTO " : "REPLACE INTO ");
     buildTableClause(sb, from);
     Visitor visitor = newVisitor(sb);
     sb.append(" (");

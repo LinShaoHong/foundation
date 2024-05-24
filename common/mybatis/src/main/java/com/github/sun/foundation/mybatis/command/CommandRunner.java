@@ -11,6 +11,12 @@ public interface CommandRunner<V> {
     return insert(Collections.singletonList(value));
   }
 
+  SqlBuilder.Template replace(Iterable<V> values);
+
+  default SqlBuilder.Template replace(V value) {
+    return replace(Collections.singletonList(value));
+  }
+
   SqlBuilder.Template update(Iterable<V> values);
 
   default SqlBuilder.Template update(V value) {
