@@ -6,7 +6,7 @@ import com.github.sun.foundation.boot.InjectionProvider;
 import java.util.List;
 
 public interface Assistant {
-  List<String> chat(String apiKey, String model, String content);
+  List<String> chat(String apiKey, String model, List<String> q);
 
   class Provider implements InjectionProvider {
     @Override

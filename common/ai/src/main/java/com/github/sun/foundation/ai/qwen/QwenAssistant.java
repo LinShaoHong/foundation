@@ -15,7 +15,6 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,14 +36,14 @@ public class QwenAssistant implements Assistant {
   }
 
   @Override
-  public List<String> chat(String apiKey, String model, String content) {
+  public List<String> chat(String apiKey, String model, List<String> q) {
     Constants.apiKey = apiKey;
-    Message msg = Message.builder()
+    List<Message> messages = q.stream().map(v -> Message.builder()
       .role(Role.USER.getValue())
-      .content(content)
-      .build();
+      .content(v)
+      .build()).collect(Collectors.toList());
     GenerationParam param = GenerationParam.builder().model(model)
-      .messages(Collections.singletonList(msg))
+      .messages(messages)
       .resultFormat(GenerationParam.ResultFormat.MESSAGE).topP(0.8).enableSearch(true)
       .build();
     try {
