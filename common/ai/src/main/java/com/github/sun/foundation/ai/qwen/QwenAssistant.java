@@ -36,7 +36,7 @@ public class QwenAssistant implements Assistant {
   }
 
   @Override
-  public List<String> chat(String apiKey, String model, List<String> q) {
+  public String chat(String apiKey, String model, List<String> q) {
     Constants.apiKey = apiKey;
     List<Message> messages = q.stream().map(v -> Message.builder()
       .role(Role.USER.getValue())
@@ -48,9 +48,10 @@ public class QwenAssistant implements Assistant {
       .build();
     try {
       GenerationResult result = gen.call(param);
-      return result.getOutput().getChoices().stream()
+      List<String> resp = result.getOutput().getChoices().stream()
         .map(v -> v.getMessage().getContent())
         .collect(Collectors.toList());
+      return resp.isEmpty() ? null : resp.get(0);
     } catch (NoApiKeyException | InputRequiredException ex) {
       throw new RuntimeException(ex);
     }

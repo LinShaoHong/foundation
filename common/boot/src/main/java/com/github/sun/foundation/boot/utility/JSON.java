@@ -149,6 +149,10 @@ public class JSON {
     return deserializeAsMap(node.toString(), valueClass, v -> v);
   }
 
+  public Valuer newValuer(String json, String... path) {
+    return newValuer(asJsonNode(json), path);
+  }
+
   public Valuer newValuer(JsonNode node, String... path) {
     return Valuer.of(node, path);
   }
@@ -188,7 +192,7 @@ public class JSON {
 
     public String asText() {
       if (!node.isTextual()) {
-        throw error("Expected String but found: " + node.getNodeType(), path);
+        throw error("Expected String but found: " + node.getNodeType().name(), path);
       }
       return node.textValue();
     }
@@ -199,7 +203,7 @@ public class JSON {
 
     public int asInt() {
       if (!node.isInt()) {
-        throw error("Expected Integer but found: " + node.getNodeType(), path);
+        throw error("Expected Integer but found: " + node.getNodeType().name(), path);
       }
       return node.intValue();
     }
@@ -210,7 +214,7 @@ public class JSON {
 
     public long asLong() {
       if (!node.isLong()) {
-        throw error("Expected Long but found: " + node.getNodeType(), path);
+        throw error("Expected Long but found: " + node.getNodeType().name(), path);
       }
       return node.longValue();
     }
@@ -221,7 +225,7 @@ public class JSON {
 
     public double asDouble() {
       if (!node.isLong()) {
-        throw error("Expected Long but found: " + node.getNodeType(), path);
+        throw error("Expected Long but found: " + node.getNodeType().name(), path);
       }
       return node.doubleValue();
     }
@@ -232,14 +236,17 @@ public class JSON {
 
     public boolean asBoolean() {
       if (!node.isBoolean()) {
-        throw error("Expected Boolean but found: " + node.getNodeType(), path);
+        throw error("Expected Boolean but found: " + node.getNodeType().name(), path);
       }
       return node.booleanValue();
     }
 
     public Iterable<Valuer> asArray() {
+      if (!hasValue()) {
+        return Collections.emptyList();
+      }
       if (!node.isArray()) {
-        throw error("Expected Array but found: " + node.getNodeType(), path);
+        throw error("Expected Array but found: " + node.getNodeType().name(), path);
       }
       Iterator<JsonNode> it = node.iterator();
       return () -> new Iterator<Valuer>() {

@@ -80,9 +80,14 @@ public class Scanner {
         throw new RuntimeException(clazz.getName() + " is not a implementation class");
       }
       try {
-        return clazz.getDeclaredConstructor().newInstance();
-      } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
-        throw new RuntimeException(ex);
+        return Injector.getInstance(clazz);
+      } catch (Throwable ex) {
+        try {
+          return clazz.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
+                 InvocationTargetException e) {
+          throw new RuntimeException(e);
+        }
       }
     }
   }
