@@ -48,7 +48,7 @@ public class JSON {
     try {
       return mapper.readTree(json);
     } catch (IOException ex) {
-      throw new RuntimeException(ex);
+      throw new RuntimeException("Json Format Invalid:\n" + json, ex);
     }
   }
 
