@@ -136,7 +136,7 @@ public class Strings {
       return this;
     }
 
-    private String next(Pattern pattern) {
+    public String next(Pattern pattern) {
       Matcher m = matcher.computeIfAbsent(pattern, x -> pattern.matcher(input));
       m.region(offset, input.length());
       if (m.lookingAt()) {
