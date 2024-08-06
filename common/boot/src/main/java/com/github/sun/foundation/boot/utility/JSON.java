@@ -291,7 +291,7 @@ public class JSON {
 
   private static Path pathOf(String... path) {
     Path p = null;
-    if (path != null && path.length > 0) {
+    if (path != null) {
       for (String n : path) {
         p = new Path(n, p);
       }
