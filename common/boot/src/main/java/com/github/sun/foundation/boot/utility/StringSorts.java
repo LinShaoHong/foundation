@@ -22,9 +22,13 @@ public class StringSorts {
     return ret;
   }
 
+  public static List<List<String>> clusterSort(List<String> arr, double threshold) {
+    return clusterSort(arr.toArray(new String[]{}), threshold);
+  }
+
   // 使用凝聚层次聚类来聚类字符串
-  private static List<List<String>> clusterSort(String[] arr, double threshold) {
-    double[][] similarityMatrix = buildMatrix(arr);
+  public static List<List<String>> clusterSort(String[] arr, double threshold) {
+    double[][] matrix = buildMatrix(arr);
     int n = arr.length;
     // 初始化聚类
     List<Set<Integer>> clusters = new ArrayList<>();
@@ -42,7 +46,7 @@ public class StringSorts {
       // 找到最相似的两个聚类
       for (int i = 0; i < clusters.size(); i++) {
         for (int j = i + 1; j < clusters.size(); j++) {
-          double similarity = similarity(clusters.get(i), clusters.get(j), similarityMatrix);
+          double similarity = similarity(clusters.get(i), clusters.get(j), matrix);
           if (similarity > maxSimilarity) {
             maxSimilarity = similarity;
             bestPair[0] = i;
