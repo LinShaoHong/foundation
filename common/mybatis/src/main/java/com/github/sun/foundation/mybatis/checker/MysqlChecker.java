@@ -246,7 +246,7 @@ public class MysqlChecker implements Lifecycle {
     String table = def.model.tableName();
     Map<String, List<String>> indexMap = tableIndexes.get(table);
     def.indexes.forEach(index -> {
-      if (index.keys.containsAll(def.primaryKey())) {
+      if (new HashSet<>(index.keys).containsAll(def.primaryKey())) {
         return;
       }
       List<String> actual = indexMap == null ? null : indexMap.get(index.name);

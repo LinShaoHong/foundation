@@ -1,6 +1,7 @@
 package com.github.sun.foundation.mybatis.query;
 
 import com.github.sun.foundation.modelling.Model;
+import com.github.sun.foundation.mybatis.SqlSessionMeta;
 import com.github.sun.foundation.sql.DBType;
 import com.github.sun.foundation.sql.SqlBuilder;
 import com.github.sun.foundation.sql.factory.SqlBuilderFactory;
@@ -24,6 +25,13 @@ public interface QueryMapper<T> {
 
   @SelectProvider(type = Provider.class, method = "count")
   int count();
+
+  @SelectProvider(type = Provider.class, method = "existTable")
+  int $existTable(@Param("table") String table);
+
+  default boolean existTable(String table) {
+    return $existTable(table) > 0;
+  }
 
   class Provider {
     public String findAll(Map<String, Object> params) {
@@ -62,6 +70,12 @@ public interface QueryMapper<T> {
       SqlBuilder sb = factory.create();
       SqlBuilder.Template template = sb.from(clazz).count().template();
       return reset(params, template);
+    }
+
+    public String existTable(Map<String, Object> params) {
+      String table = (String) params.get("table");
+      SqlSessionMeta meta = SqlSessionMeta.collector.values().iterator().next();
+      return "SELECT COUNT(0) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" + meta.database() + "' AND TABLE_NAME='" + table + "'";
     }
 
     @SuppressWarnings("Duplicates")
