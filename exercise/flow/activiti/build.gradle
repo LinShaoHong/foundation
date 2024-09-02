@@ -1,9 +1,0 @@
-dependencies {
-    api project(":$rootName-rest")
-    api project(":$rootName-mybatis")
-    api 'org.activiti:activiti-spring-boot-starter-basic:6.0.0'
-    api 'org.springframework.boot:spring-boot-starter-data-jpa:2.1.10.RELEASE'
-}
-
-apply from: rootProject.file("buildscript/gradle/sub_springcloud.gradle")
-apply from: rootProject.file("buildscript/gradle/sub_springjersey.gradle")
