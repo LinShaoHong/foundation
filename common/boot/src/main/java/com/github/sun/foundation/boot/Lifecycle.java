@@ -1,7 +1,7 @@
 package com.github.sun.foundation.boot;
 
 public interface Lifecycle {
-  void startup();
+    void startup();
 
-  void shutdown();
+    void shutdown();
 }

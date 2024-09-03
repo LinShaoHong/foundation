@@ -1,6 +1,6 @@
 dependencies {
-  api project(":$rootName-boot")
-  api "org.quartz-scheduler:quartz:$vers.quartz"
+    api project(":$rootName-boot")
+    api "org.quartz-scheduler:quartz:$vers.quartz"
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")

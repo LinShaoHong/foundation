@@ -1,6 +1,6 @@
 dependencies {
-  api project(":$rootName-rest")
-  api project(":$rootName-mybatis")
+    api project(":$rootName-rest")
+    api project(":$rootName-mybatis")
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_springjersey.gradle")

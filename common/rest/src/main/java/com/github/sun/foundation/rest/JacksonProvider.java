@@ -7,7 +7,7 @@ import javax.ws.rs.ext.Provider;
 
 @Provider
 public class JacksonProvider extends JacksonJaxbJsonProvider {
-  public JacksonProvider() {
-    super.setMapper(JSON.getMapper());
-  }
+    public JacksonProvider() {
+        super.setMapper(JSON.getMapper());
+    }
 }

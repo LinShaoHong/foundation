@@ -1,5 +1,5 @@
 dependencies {
-  api "org.springframework.cloud:spring-cloud-starter-netflix-eureka-server"
+    api "org.springframework.cloud:spring-cloud-starter-netflix-eureka-server"
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_springcloud.gradle")

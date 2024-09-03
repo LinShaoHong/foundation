@@ -8,23 +8,23 @@ import org.apache.ibatis.reflection.factory.DefaultObjectFactory;
 import org.apache.ibatis.reflection.wrapper.DefaultObjectWrapperFactory;
 
 abstract class BasicInterceptor implements Interceptor {
-  private static final ReflectorFactory REFLECTOR_FACTORY = new DefaultReflectorFactory();
-  private static final DefaultObjectFactory OBJECT_FACTORY = new DefaultObjectFactory();
-  private static final DefaultObjectWrapperFactory OBJECT_WRAPPER_FACTORY = new DefaultObjectWrapperFactory();
+    private static final ReflectorFactory REFLECTOR_FACTORY = new DefaultReflectorFactory();
+    private static final DefaultObjectFactory OBJECT_FACTORY = new DefaultObjectFactory();
+    private static final DefaultObjectWrapperFactory OBJECT_WRAPPER_FACTORY = new DefaultObjectWrapperFactory();
 
-  MetaObject getMetaObject(Object obj) {
-    MetaObject metaObject = MetaObject.forObject(obj, OBJECT_FACTORY, OBJECT_WRAPPER_FACTORY, REFLECTOR_FACTORY);
-    while (metaObject.hasGetter("h")) {
-      Object object = metaObject.getValue("h");
-      metaObject = MetaObject.forObject(object, OBJECT_FACTORY, OBJECT_WRAPPER_FACTORY, REFLECTOR_FACTORY);
+    MetaObject getMetaObject(Object obj) {
+        MetaObject metaObject = MetaObject.forObject(obj, OBJECT_FACTORY, OBJECT_WRAPPER_FACTORY, REFLECTOR_FACTORY);
+        while (metaObject.hasGetter("h")) {
+            Object object = metaObject.getValue("h");
+            metaObject = MetaObject.forObject(object, OBJECT_FACTORY, OBJECT_WRAPPER_FACTORY, REFLECTOR_FACTORY);
+        }
+        if (metaObject.hasGetter("target")) {
+            Object target = metaObject.getValue("target");
+            metaObject = MetaObject.forObject(target, OBJECT_FACTORY, OBJECT_WRAPPER_FACTORY, REFLECTOR_FACTORY);
+            if (metaObject.hasGetter("h")) {
+                return getMetaObject(target);
+            }
+        }
+        return metaObject;
     }
-    if (metaObject.hasGetter("target")) {
-      Object target = metaObject.getValue("target");
-      metaObject = MetaObject.forObject(target, OBJECT_FACTORY, OBJECT_WRAPPER_FACTORY, REFLECTOR_FACTORY);
-      if (metaObject.hasGetter("h")) {
-        return getMetaObject(target);
-      }
-    }
-    return metaObject;
-  }
 }

@@ -8,11 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EntityService {
-  @Autowired
-  private EntityMapper entityMapper;
+    @Autowired
+    private EntityMapper entityMapper;
 
-  @Transactional
-  public void insert(Entity entity) {
-    entityMapper.insert(entity);
-  }
+    @Transactional
+    public void insert(Entity entity) {
+        entityMapper.insert(entity);
+    }
 }

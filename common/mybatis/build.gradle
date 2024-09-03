@@ -1,9 +1,9 @@
 dependencies {
-  api project(":$rootName-sql")
-  api "org.mybatis:mybatis:$vers.mybatis"
-  api "org.mybatis:mybatis-spring:$vers.mybatis_spring"
-  api "org.springframework:spring-tx:$vers.spring"
-  api "org.springframework:spring-jdbc:$vers.spring"
+    api project(":$rootName-sql")
+    api "org.mybatis:mybatis:$vers.mybatis"
+    api "org.mybatis:mybatis-spring:$vers.mybatis_spring"
+    api "org.springframework:spring-tx:$vers.spring"
+    api "org.springframework:spring-jdbc:$vers.spring"
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")

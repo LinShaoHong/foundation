@@ -7,9 +7,9 @@ import javax.ws.rs.Path;
 
 @Path("/v1/api")
 public class BarResource extends AbstractResource {
-  @GET
-  @Path("/bar")
-  public String bar() {
-    return "Hello, foo";
-  }
+    @GET
+    @Path("/bar")
+    public String bar() {
+        return "Hello, foo";
+    }
 }

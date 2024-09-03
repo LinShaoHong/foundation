@@ -5,5 +5,5 @@ package com.github.sun.foundation.sql;
  * @Date: 下午9:56 2019-02-28
  */
 public enum JoinMode {
-  LEFT, INNER, RIGHT
+    LEFT, INNER, RIGHT
 }

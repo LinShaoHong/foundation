@@ -10,31 +10,32 @@ import java.util.stream.Stream;
 
 @UtilityClass
 public class IO {
-  public String read(InputStream in) {
-    StringBuilder sb = new StringBuilder();
-    try (InputStreamReader reader = new InputStreamReader(in)) {
-      char[] buf = new char[2048];
-      int c;
-      for (; ; ) {
-        c = reader.read(buf);
-        if (c < 0) break;
-        if (c > 0) {
-          sb.append(new String(buf, 0, c).intern());
+    public String read(InputStream in) {
+        StringBuilder sb = new StringBuilder();
+        try (InputStreamReader reader = new InputStreamReader(in)) {
+            char[] buf = new char[2048];
+            int c;
+            for (; ; ) {
+                c = reader.read(buf);
+                if (c < 0)
+                    break;
+                if (c > 0) {
+                    sb.append(new String(buf, 0, c).intern());
+                }
+            }
+            return sb.toString();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
         }
-      }
-      return sb.toString();
-    } catch (IOException ex) {
-      throw new RuntimeException(ex);
     }
-  }
 
-  public void delete(File f) {
-    if (f.isDirectory()) {
-      File[] files = f.listFiles();
-      if (files != null) {
-        Stream.of(files).forEach(IO::delete);
-      }
+    public void delete(File f) {
+        if (f.isDirectory()) {
+            File[] files = f.listFiles();
+            if (files != null) {
+                Stream.of(files).forEach(IO::delete);
+            }
+        }
+        f.delete();
     }
-    f.delete();
-  }
 }

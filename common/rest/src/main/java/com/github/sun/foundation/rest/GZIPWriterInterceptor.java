@@ -12,13 +12,13 @@ import java.util.zip.GZIPOutputStream;
 @Provider
 @Compress
 public class GZIPWriterInterceptor implements WriterInterceptor {
-  @Override
-  public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
-    MultivaluedMap<String, Object> headers = context.getHeaders();
-    headers.add("Content-Encoding", "gzip");
+    @Override
+    public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
+        MultivaluedMap<String, Object> headers = context.getHeaders();
+        headers.add("Content-Encoding", "gzip");
 
-    OutputStream outputStream = context.getOutputStream();
-    context.setOutputStream(new GZIPOutputStream(outputStream));
-    context.proceed();
-  }
+        OutputStream outputStream = context.getOutputStream();
+        context.setOutputStream(new GZIPOutputStream(outputStream));
+        context.proceed();
+    }
 }

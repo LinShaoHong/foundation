@@ -18,831 +18,831 @@ import java.util.stream.Stream;
  * @Date: 7:24 PM 2019-02-28
  */
 public interface SqlBuilder {
-  void clear();
+    void clear();
 
-  JoinAble from(Class<?> entityClass, String tableAlias);
+    JoinAble from(Class<?> entityClass, String tableAlias);
 
-  default JoinAble from(Class<?> entityClass) {
-    return from(entityClass, null);
-  }
-
-  JoinAble from(String table, String tableAlias);
-
-  default JoinAble from(String table) {
-    return from(table, null);
-  }
-
-  JoinAble from(Expression subQueryExpression, String subAlias);
-
-  JoinAble from(From from);
-
-  void putFroms(Map<String, From> froms);
-
-  default void putFroms(List<From> froms) {
-    Map<String, From> map = new HashMap<>();
-    froms.stream().filter(f -> f.alias != null).forEach(f -> map.put(f.alias, f));
-    putFroms(map);
-  }
-
-  default void putFroms(From... froms) {
-    putFroms(Arrays.asList(froms));
-  }
-
-  abstract class From {
-    public final String alias;
-
-    public From(String alias) {
-      this.alias = alias;
+    default JoinAble from(Class<?> entityClass) {
+        return from(entityClass, null);
     }
 
-    public abstract Class<?> entityClass();
+    JoinAble from(String table, String tableAlias);
 
-    public abstract String tableName();
-
-    public abstract Expression subQueryExpression();
-  }
-
-  class TypedFrom extends From {
-    public TypedFrom(Class<?> entityClass, String alias) {
-      super(alias);
-      this.entityClass = entityClass;
+    default JoinAble from(String table) {
+        return from(table, null);
     }
 
-    public final Class<?> entityClass;
+    JoinAble from(Expression subQueryExpression, String subAlias);
 
-    @Override
-    public Class<?> entityClass() {
-      return entityClass;
-    }
+    JoinAble from(From from);
 
-    @Override
-    public String tableName() {
-      return null;
-    }
+    void putFroms(Map<String, From> froms);
 
-    @Override
-    public Expression subQueryExpression() {
-      return null;
+    default void putFroms(List<From> froms) {
+        Map<String, From> map = new HashMap<>();
+        froms.stream().filter(f -> f.alias != null).forEach(f -> map.put(f.alias, f));
+        putFroms(map);
     }
-  }
 
-  class DimsFrom extends From {
-    public DimsFrom(String tableName, String alias) {
-      super(alias);
-      this.tableName = tableName;
+    default void putFroms(From... froms) {
+        putFroms(Arrays.asList(froms));
     }
 
-    public final String tableName;
+    abstract class From {
+        public final String alias;
 
-    @Override
-    public Class<?> entityClass() {
-      return null;
-    }
+        public From(String alias) {
+            this.alias = alias;
+        }
 
-    @Override
-    public String tableName() {
-      return tableName;
-    }
+        public abstract Class<?> entityClass();
 
-    @Override
-    public Expression subQueryExpression() {
-      return null;
-    }
-  }
+        public abstract String tableName();
 
-  class SubFrom extends From {
-    public SubFrom(Expression subQueryExpression, String alias) {
-      super(alias);
-      this.subQueryExpression = subQueryExpression;
+        public abstract Expression subQueryExpression();
     }
 
-    public final Expression subQueryExpression;
+    class TypedFrom extends From {
+        public TypedFrom(Class<?> entityClass, String alias) {
+            super(alias);
+            this.entityClass = entityClass;
+        }
 
-    @Override
-    public Class<?> entityClass() {
-      return null;
-    }
+        public final Class<?> entityClass;
 
-    @Override
-    public String tableName() {
-      return null;
-    }
+        @Override
+        public Class<?> entityClass() {
+            return entityClass;
+        }
 
-    @Override
-    public Expression subQueryExpression() {
-      return subQueryExpression;
+        @Override
+        public String tableName() {
+            return null;
+        }
+
+        @Override
+        public Expression subQueryExpression() {
+            return null;
+        }
     }
-  }
 
-  default From fromOf(Class<?> entityClass, String alias) {
-    TypedFrom from = new TypedFrom(entityClass, alias);
-    putFroms(from);
-    return from;
-  }
+    class DimsFrom extends From {
+        public DimsFrom(String tableName, String alias) {
+            super(alias);
+            this.tableName = tableName;
+        }
 
-  default From fromOf(Class<?> entityClass) {
-    return fromOf(entityClass, null);
-  }
+        public final String tableName;
 
-  default From fromOf(String tableName, String alias) {
-    DimsFrom from = new DimsFrom(tableName, alias);
-    putFroms(from);
-    return from;
-  }
+        @Override
+        public Class<?> entityClass() {
+            return null;
+        }
 
-  default From fromOf(String tableName) {
-    return fromOf(tableName, null);
-  }
+        @Override
+        public String tableName() {
+            return tableName;
+        }
 
-  default From fromOf(Expression subQueryExpression, String alias) {
-    SubFrom from = new SubFrom(subQueryExpression, alias);
-    putFroms(from);
-    return from;
-  }
+        @Override
+        public Expression subQueryExpression() {
+            return null;
+        }
+    }
 
-  default From fromOf(Expression subQueryExpression) {
-    return fromOf(subQueryExpression, null);
-  }
+    class SubFrom extends From {
+        public SubFrom(Expression subQueryExpression, String alias) {
+            super(alias);
+            this.subQueryExpression = subQueryExpression;
+        }
 
-  interface JoinAble extends FilterAble {
-    List<Join> joins();
+        public final Expression subQueryExpression;
 
-    JoinAble join(Class<?> joinedClass, String alias, JoinMode mode, Expression on);
+        @Override
+        public Class<?> entityClass() {
+            return null;
+        }
 
-    <T> JoinAble join(Iterable<T> values, Function<T, Join> func);
+        @Override
+        public String tableName() {
+            return null;
+        }
 
-    default <T> JoinAble join(Iterable<Join> joins) {
-      return join(joins, j -> j);
+        @Override
+        public Expression subQueryExpression() {
+            return subQueryExpression;
+        }
     }
 
-    default JoinAble leftJoin(Class<?> joinedClass, String alias, Expression on) {
-      return join(joinedClass, alias, JoinMode.LEFT, on);
+    default From fromOf(Class<?> entityClass, String alias) {
+        TypedFrom from = new TypedFrom(entityClass, alias);
+        putFroms(from);
+        return from;
     }
 
-    default JoinAble leftJoin(Class<?> joinedClass, String alias) {
-      return leftJoin(joinedClass, alias, null);
+    default From fromOf(Class<?> entityClass) {
+        return fromOf(entityClass, null);
     }
 
-    default JoinAble innerJoin(Class<?> joinedClass, String alias, Expression on) {
-      return join(joinedClass, alias, JoinMode.INNER, on);
+    default From fromOf(String tableName, String alias) {
+        DimsFrom from = new DimsFrom(tableName, alias);
+        putFroms(from);
+        return from;
     }
 
-    default JoinAble innerJoin(Class<?> joinedClass, String alias) {
-      return innerJoin(joinedClass, alias, null);
+    default From fromOf(String tableName) {
+        return fromOf(tableName, null);
     }
 
-    default JoinAble rightJoin(Class<?> joinedClass, String alias, Expression on) {
-      return join(joinedClass, alias, JoinMode.RIGHT, on);
+    default From fromOf(Expression subQueryExpression, String alias) {
+        SubFrom from = new SubFrom(subQueryExpression, alias);
+        putFroms(from);
+        return from;
     }
 
-    default JoinAble rightJoin(Class<?> joinedClass, String alias) {
-      return rightJoin(joinedClass, alias, null);
+    default From fromOf(Expression subQueryExpression) {
+        return fromOf(subQueryExpression, null);
     }
-
-    JoinAble join(String joinedTable, String alias, JoinMode mode, Expression on);
 
-    default JoinAble leftJoin(String joinedTable, String alias, Expression on) {
-      return join(joinedTable, alias, JoinMode.LEFT, on);
-    }
+    interface JoinAble extends FilterAble {
+        List<Join> joins();
 
-    default JoinAble leftJoin(String joinedTable, String alias) {
-      return leftJoin(joinedTable, alias, null);
-    }
+        JoinAble join(Class<?> joinedClass, String alias, JoinMode mode, Expression on);
 
-    default JoinAble innerJoin(String joinedTable, String alias, Expression on) {
-      return join(joinedTable, alias, JoinMode.INNER, on);
-    }
+        <T> JoinAble join(Iterable<T> values, Function<T, Join> func);
 
-    default JoinAble innerJoin(String joinedTable, String alias) {
-      return innerJoin(joinedTable, alias, null);
-    }
+        default <T> JoinAble join(Iterable<Join> joins) {
+            return join(joins, j -> j);
+        }
 
-    default JoinAble rightJoin(String joinedTable, String alias, Expression on) {
-      return join(joinedTable, alias, JoinMode.RIGHT, on);
-    }
+        default JoinAble leftJoin(Class<?> joinedClass, String alias, Expression on) {
+            return join(joinedClass, alias, JoinMode.LEFT, on);
+        }
 
-    default JoinAble rightJoin(String joinedTable, String alias) {
-      return rightJoin(joinedTable, alias, null);
-    }
+        default JoinAble leftJoin(Class<?> joinedClass, String alias) {
+            return leftJoin(joinedClass, alias, null);
+        }
 
-    JoinAble join(Expression subQueryExpression, String subAlias, JoinMode mode, Expression on);
+        default JoinAble innerJoin(Class<?> joinedClass, String alias, Expression on) {
+            return join(joinedClass, alias, JoinMode.INNER, on);
+        }
 
-    default JoinAble leftJoin(Expression subQueryExpression, String subAlias, Expression on) {
-      return join(subQueryExpression, subAlias, JoinMode.LEFT, on);
-    }
+        default JoinAble innerJoin(Class<?> joinedClass, String alias) {
+            return innerJoin(joinedClass, alias, null);
+        }
 
-    default JoinAble leftJoin(Expression subQueryExpression, String subAlias) {
-      return leftJoin(subQueryExpression, subAlias, null);
-    }
+        default JoinAble rightJoin(Class<?> joinedClass, String alias, Expression on) {
+            return join(joinedClass, alias, JoinMode.RIGHT, on);
+        }
 
-    default JoinAble innerJoin(Expression subQueryExpression, String subAlias, Expression on) {
-      return join(subQueryExpression, subAlias, JoinMode.INNER, on);
-    }
+        default JoinAble rightJoin(Class<?> joinedClass, String alias) {
+            return rightJoin(joinedClass, alias, null);
+        }
 
-    default JoinAble innerJoin(Expression subQueryExpression, String subAlias) {
-      return innerJoin(subQueryExpression, subAlias, null);
-    }
+        JoinAble join(String joinedTable, String alias, JoinMode mode, Expression on);
 
-    default JoinAble rightJoin(Expression subQueryExpression, String subAlias, Expression on) {
-      return join(subQueryExpression, subAlias, JoinMode.RIGHT, on);
-    }
+        default JoinAble leftJoin(String joinedTable, String alias, Expression on) {
+            return join(joinedTable, alias, JoinMode.LEFT, on);
+        }
 
-    default JoinAble rightJoin(Expression sub, String subAlias) {
-      return rightJoin(sub, subAlias, null);
-    }
-  }
+        default JoinAble leftJoin(String joinedTable, String alias) {
+            return leftJoin(joinedTable, alias, null);
+        }
 
-  void putJoins(Map<String, Join> joins);
+        default JoinAble innerJoin(String joinedTable, String alias, Expression on) {
+            return join(joinedTable, alias, JoinMode.INNER, on);
+        }
 
-  default void putJoins(List<Join> joins) {
-    Map<String, Join> map = new HashMap<>();
-    joins.forEach(j -> map.put(j.alias, j));
-    putJoins(map);
-  }
+        default JoinAble innerJoin(String joinedTable, String alias) {
+            return innerJoin(joinedTable, alias, null);
+        }
 
-  default void putJoins(Join... joins) {
-    putJoins(Arrays.asList(joins));
-  }
+        default JoinAble rightJoin(String joinedTable, String alias, Expression on) {
+            return join(joinedTable, alias, JoinMode.RIGHT, on);
+        }
 
-  abstract class Join {
-    public final String alias;
-    public final JoinMode mode;
-    public final Expression on;
+        default JoinAble rightJoin(String joinedTable, String alias) {
+            return rightJoin(joinedTable, alias, null);
+        }
 
-    public Join(String alias, JoinMode mode, Expression on) {
-      this.alias = alias;
-      this.mode = mode;
-      this.on = on;
-    }
+        JoinAble join(Expression subQueryExpression, String subAlias, JoinMode mode, Expression on);
 
-    public abstract Class<?> joinedClass();
+        default JoinAble leftJoin(Expression subQueryExpression, String subAlias, Expression on) {
+            return join(subQueryExpression, subAlias, JoinMode.LEFT, on);
+        }
 
-    public abstract String joinedTable();
+        default JoinAble leftJoin(Expression subQueryExpression, String subAlias) {
+            return leftJoin(subQueryExpression, subAlias, null);
+        }
 
-    public abstract Expression subQueryExpression();
-  }
+        default JoinAble innerJoin(Expression subQueryExpression, String subAlias, Expression on) {
+            return join(subQueryExpression, subAlias, JoinMode.INNER, on);
+        }
 
-  class TypedJoin extends Join {
-    public TypedJoin(Class<?> joinedClass, String alias, JoinMode mode, Expression on) {
-      super(alias, mode, on);
-      this.joinedClass = joinedClass;
-    }
+        default JoinAble innerJoin(Expression subQueryExpression, String subAlias) {
+            return innerJoin(subQueryExpression, subAlias, null);
+        }
 
-    public final Class<?> joinedClass;
+        default JoinAble rightJoin(Expression subQueryExpression, String subAlias, Expression on) {
+            return join(subQueryExpression, subAlias, JoinMode.RIGHT, on);
+        }
 
-    @Override
-    public Class<?> joinedClass() {
-      return joinedClass;
+        default JoinAble rightJoin(Expression sub, String subAlias) {
+            return rightJoin(sub, subAlias, null);
+        }
     }
+
+    void putJoins(Map<String, Join> joins);
 
-    @Override
-    public String joinedTable() {
-      return null;
+    default void putJoins(List<Join> joins) {
+        Map<String, Join> map = new HashMap<>();
+        joins.forEach(j -> map.put(j.alias, j));
+        putJoins(map);
     }
 
-    @Override
-    public Expression subQueryExpression() {
-      return null;
+    default void putJoins(Join... joins) {
+        putJoins(Arrays.asList(joins));
     }
-  }
 
-  default Join joinOf(Class<?> joinedClass, String alias, JoinMode mode, Expression on) {
-    TypedJoin join = new TypedJoin(joinedClass, alias, mode, on);
-    putJoins(join);
-    return join;
-  }
+    abstract class Join {
+        public final String alias;
+        public final JoinMode mode;
+        public final Expression on;
 
-  default Join leftJoinOf(Class<?> joinedClass, String alias, Expression on) {
-    return joinOf(joinedClass, alias, JoinMode.LEFT, on);
-  }
+        public Join(String alias, JoinMode mode, Expression on) {
+            this.alias = alias;
+            this.mode = mode;
+            this.on = on;
+        }
 
-  default Join leftJoinOf(Class<?> joinedClass, String alias) {
-    return leftJoinOf(joinedClass, alias, null);
-  }
+        public abstract Class<?> joinedClass();
 
-  default Join innerJoinOf(Class<?> joinedClass, String alias, Expression on) {
-    return joinOf(joinedClass, alias, JoinMode.INNER, on);
-  }
+        public abstract String joinedTable();
 
-  default Join innerJoinOf(Class<?> joinedClass, String alias) {
-    return innerJoinOf(joinedClass, alias, null);
-  }
+        public abstract Expression subQueryExpression();
+    }
 
-  default Join rightJoinOf(Class<?> joinedClass, String alias, Expression on) {
-    return joinOf(joinedClass, alias, JoinMode.RIGHT, on);
-  }
+    class TypedJoin extends Join {
+        public TypedJoin(Class<?> joinedClass, String alias, JoinMode mode, Expression on) {
+            super(alias, mode, on);
+            this.joinedClass = joinedClass;
+        }
 
-  default Join rightJoinOf(Class<?> joinedClass, String alias) {
-    return rightJoinOf(joinedClass, alias, null);
-  }
+        public final Class<?> joinedClass;
 
-  default Join joinOf(String joinedTable, String alias, JoinMode mode, Expression on) {
-    DimsJoin join = new DimsJoin(joinedTable, alias, mode, on);
-    putJoins(join);
-    return join;
-  }
+        @Override
+        public Class<?> joinedClass() {
+            return joinedClass;
+        }
 
-  default Join leftJoinOf(String joinedTable, String alias, Expression on) {
-    return joinOf(joinedTable, alias, JoinMode.LEFT, on);
-  }
+        @Override
+        public String joinedTable() {
+            return null;
+        }
 
-  default Join leftJoinOf(String joinedTable, String alias) {
-    return leftJoinOf(joinedTable, alias, null);
-  }
+        @Override
+        public Expression subQueryExpression() {
+            return null;
+        }
+    }
 
-  default Join innerJoinOf(String joinedTable, String alias, Expression on) {
-    return joinOf(joinedTable, alias, JoinMode.INNER, on);
-  }
+    default Join joinOf(Class<?> joinedClass, String alias, JoinMode mode, Expression on) {
+        TypedJoin join = new TypedJoin(joinedClass, alias, mode, on);
+        putJoins(join);
+        return join;
+    }
 
-  default Join innerJoinOf(String joinedTable, String alias) {
-    return innerJoinOf(joinedTable, alias, null);
-  }
+    default Join leftJoinOf(Class<?> joinedClass, String alias, Expression on) {
+        return joinOf(joinedClass, alias, JoinMode.LEFT, on);
+    }
 
-  default Join rightJoinOf(String joinedTable, String alias, Expression on) {
-    return joinOf(joinedTable, alias, JoinMode.RIGHT, on);
-  }
+    default Join leftJoinOf(Class<?> joinedClass, String alias) {
+        return leftJoinOf(joinedClass, alias, null);
+    }
 
-  default Join rightJoinOf(String joinedTable, String alias) {
-    return rightJoinOf(joinedTable, alias, null);
-  }
+    default Join innerJoinOf(Class<?> joinedClass, String alias, Expression on) {
+        return joinOf(joinedClass, alias, JoinMode.INNER, on);
+    }
 
-  default Join joinOf(Expression subQueryExpression, String subAlias, JoinMode mode, Expression on) {
-    SubJoin join = new SubJoin(subQueryExpression, subAlias, mode, on);
-    putJoins(join);
-    return join;
-  }
+    default Join innerJoinOf(Class<?> joinedClass, String alias) {
+        return innerJoinOf(joinedClass, alias, null);
+    }
 
-  default Join leftJoinOf(Expression subQueryExpression, String subAlias, Expression on) {
-    return joinOf(subQueryExpression, subAlias, JoinMode.LEFT, on);
-  }
+    default Join rightJoinOf(Class<?> joinedClass, String alias, Expression on) {
+        return joinOf(joinedClass, alias, JoinMode.RIGHT, on);
+    }
 
-  default Join leftJoinOf(Expression subQueryExpression, String subAlias) {
-    return leftJoinOf(subQueryExpression, subAlias, null);
-  }
+    default Join rightJoinOf(Class<?> joinedClass, String alias) {
+        return rightJoinOf(joinedClass, alias, null);
+    }
 
-  default Join innerJoinOf(Expression subQueryExpression, String subAlias, Expression on) {
-    return joinOf(subQueryExpression, subAlias, JoinMode.INNER, on);
-  }
+    default Join joinOf(String joinedTable, String alias, JoinMode mode, Expression on) {
+        DimsJoin join = new DimsJoin(joinedTable, alias, mode, on);
+        putJoins(join);
+        return join;
+    }
 
-  default Join innerJoinOf(Expression subQueryExpression, String subAlias) {
-    return innerJoinOf(subQueryExpression, subAlias, null);
-  }
+    default Join leftJoinOf(String joinedTable, String alias, Expression on) {
+        return joinOf(joinedTable, alias, JoinMode.LEFT, on);
+    }
 
-  default Join rightJoinOf(Expression subQueryExpression, String subAlias, Expression on) {
-    return joinOf(subQueryExpression, subAlias, JoinMode.RIGHT, on);
-  }
+    default Join leftJoinOf(String joinedTable, String alias) {
+        return leftJoinOf(joinedTable, alias, null);
+    }
 
-  default Join rightJoinOf(Expression subQueryExpression, String subAlias) {
-    return rightJoinOf(subQueryExpression, subAlias, null);
-  }
+    default Join innerJoinOf(String joinedTable, String alias, Expression on) {
+        return joinOf(joinedTable, alias, JoinMode.INNER, on);
+    }
 
-  class DimsJoin extends Join {
-    public DimsJoin(String joinedTable, String alias, JoinMode mode, Expression on) {
-      super(alias, mode, on);
-      this.joinedTable = joinedTable;
+    default Join innerJoinOf(String joinedTable, String alias) {
+        return innerJoinOf(joinedTable, alias, null);
     }
 
-    public final String joinedTable;
+    default Join rightJoinOf(String joinedTable, String alias, Expression on) {
+        return joinOf(joinedTable, alias, JoinMode.RIGHT, on);
+    }
 
-    @Override
-    public Class<?> joinedClass() {
-      return null;
+    default Join rightJoinOf(String joinedTable, String alias) {
+        return rightJoinOf(joinedTable, alias, null);
     }
 
-    @Override
-    public String joinedTable() {
-      return joinedTable;
+    default Join joinOf(Expression subQueryExpression, String subAlias, JoinMode mode, Expression on) {
+        SubJoin join = new SubJoin(subQueryExpression, subAlias, mode, on);
+        putJoins(join);
+        return join;
     }
 
-    @Override
-    public Expression subQueryExpression() {
-      return null;
+    default Join leftJoinOf(Expression subQueryExpression, String subAlias, Expression on) {
+        return joinOf(subQueryExpression, subAlias, JoinMode.LEFT, on);
     }
-  }
 
-  class SubJoin extends Join {
-    public SubJoin(Expression subQueryExpression, String alias, JoinMode mode, Expression on) {
-      super(alias, mode, on);
-      this.subQueryExpression = subQueryExpression;
+    default Join leftJoinOf(Expression subQueryExpression, String subAlias) {
+        return leftJoinOf(subQueryExpression, subAlias, null);
     }
 
-    public final Expression subQueryExpression;
+    default Join innerJoinOf(Expression subQueryExpression, String subAlias, Expression on) {
+        return joinOf(subQueryExpression, subAlias, JoinMode.INNER, on);
+    }
 
-    @Override
-    public Class<?> joinedClass() {
-      return null;
+    default Join innerJoinOf(Expression subQueryExpression, String subAlias) {
+        return innerJoinOf(subQueryExpression, subAlias, null);
     }
 
-    @Override
-    public String joinedTable() {
-      return null;
+    default Join rightJoinOf(Expression subQueryExpression, String subAlias, Expression on) {
+        return joinOf(subQueryExpression, subAlias, JoinMode.RIGHT, on);
     }
 
-    @Override
-    public Expression subQueryExpression() {
-      return subQueryExpression;
+    default Join rightJoinOf(Expression subQueryExpression, String subAlias) {
+        return rightJoinOf(subQueryExpression, subAlias, null);
     }
-  }
 
-  interface FilterAble extends ModifyAble {
-    UpdateAble insert();
+    class DimsJoin extends Join {
+        public DimsJoin(String joinedTable, String alias, JoinMode mode, Expression on) {
+            super(alias, mode, on);
+            this.joinedTable = joinedTable;
+        }
 
-    UpdateAble replace();
+        public final String joinedTable;
 
-    TemplateBuilder insert(Expression subQueryExpression);
+        @Override
+        public Class<?> joinedClass() {
+            return null;
+        }
 
-    TemplateBuilder replace(Expression subQueryExpression);
+        @Override
+        public String joinedTable() {
+            return joinedTable;
+        }
 
-    FilterAble where(Expression condition);
+        @Override
+        public Expression subQueryExpression() {
+            return null;
+        }
+    }
 
-    <T> FilterAble where(Iterable<T> values, Function<T, Expression> func);
-  }
+    class SubJoin extends Join {
+        public SubJoin(Expression subQueryExpression, String alias, JoinMode mode, Expression on) {
+            super(alias, mode, on);
+            this.subQueryExpression = subQueryExpression;
+        }
 
-  interface GroupAble extends OrderAble {
-    Group groupBy();
+        public final Expression subQueryExpression;
 
-    GroupAble groupBy(List<Expression> expressions);
+        @Override
+        public Class<?> joinedClass() {
+            return null;
+        }
 
-    <T> GroupAble groupBy(Iterable<T> values, Function<T, Expression> func);
+        @Override
+        public String joinedTable() {
+            return null;
+        }
 
-    default GroupAble groupBy(Expression... expressions) {
-      return groupBy(Arrays.asList(expressions));
+        @Override
+        public Expression subQueryExpression() {
+            return subQueryExpression;
+        }
     }
 
-    default GroupAble groupBy(String... fields) {
-      return groupBy(Arrays.stream(fields)
-        .map(Expression::path)
-        .collect(Collectors.toList()));
-    }
+    interface FilterAble extends ModifyAble {
+        UpdateAble insert();
+
+        UpdateAble replace();
 
-    GroupAble having(Expression booleanExpr);
-  }
+        TemplateBuilder insert(Expression subQueryExpression);
 
-  class Group {
-    public final List<Expression> groups;
-    public final Expression having;
+        TemplateBuilder replace(Expression subQueryExpression);
 
-    public Group(List<Expression> groups, Expression having) {
-      this.groups = groups;
-      this.having = having;
+        FilterAble where(Expression condition);
+
+        <T> FilterAble where(Iterable<T> values, Function<T, Expression> func);
     }
-  }
 
-  interface OrderAble extends LimitAble {
-    List<Order> orders();
+    interface GroupAble extends OrderAble {
+        Group groupBy();
 
-    OrderAble orderBy(OrderMode mode, Expression expr);
+        GroupAble groupBy(List<Expression> expressions);
 
-    default OrderAble orderBy(Expression expr, boolean asc) {
-      return orderBy(asc ? OrderMode.ASC : OrderMode.DESC, expr);
-    }
+        <T> GroupAble groupBy(Iterable<T> values, Function<T, Expression> func);
 
-    default OrderAble orderBy(String field, boolean asc) {
-      return orderBy(Expression.path(field), asc);
-    }
+        default GroupAble groupBy(Expression... expressions) {
+            return groupBy(Arrays.asList(expressions));
+        }
 
-    <T> OrderAble orderBy(Iterable<T> values, Function<T, Order> func);
+        default GroupAble groupBy(String... fields) {
+            return groupBy(Arrays.stream(fields)
+                    .map(Expression::path)
+                    .collect(Collectors.toList()));
+        }
 
-    default OrderAble asc(Expression expr) {
-      return orderBy(OrderMode.ASC, expr);
+        GroupAble having(Expression booleanExpr);
     }
 
-    default OrderAble desc(Expression expr) {
-      return orderBy(OrderMode.DESC, expr);
-    }
+    class Group {
+        public final List<Expression> groups;
+        public final Expression having;
 
-    default OrderAble asc(String field) {
-      return asc(Expression.path(field));
+        public Group(List<Expression> groups, Expression having) {
+            this.groups = groups;
+            this.having = having;
+        }
     }
 
-    default OrderAble desc(String field) {
-      return desc(Expression.path(field));
-    }
-  }
+    interface OrderAble extends LimitAble {
+        List<Order> orders();
 
-  class Order {
-    public final OrderMode mode;
-    public final Expression expression;
+        OrderAble orderBy(OrderMode mode, Expression expr);
 
-    public Order(OrderMode mode, Expression expression) {
-      this.mode = mode;
-      this.expression = expression;
-    }
-  }
+        default OrderAble orderBy(Expression expr, boolean asc) {
+            return orderBy(asc ? OrderMode.ASC : OrderMode.DESC, expr);
+        }
 
-  default Order orderOf(OrderMode mode, Expression expression) {
-    return new Order(mode, expression);
-  }
+        default OrderAble orderBy(String field, boolean asc) {
+            return orderBy(Expression.path(field), asc);
+        }
 
-  default Order ascOf(Expression expression) {
-    return orderOf(OrderMode.ASC, expression);
-  }
+        <T> OrderAble orderBy(Iterable<T> values, Function<T, Order> func);
 
-  default Order descOf(Expression expression) {
-    return orderOf(OrderMode.DESC, expression);
-  }
+        default OrderAble asc(Expression expr) {
+            return orderBy(OrderMode.ASC, expr);
+        }
 
-  interface LimitAble extends SelectAble {
-    SelectAble limit(Limit limit);
+        default OrderAble desc(Expression expr) {
+            return orderBy(OrderMode.DESC, expr);
+        }
 
-    default SelectAble limit(int start, int count) {
-      return limit(new Limit(Expression.literal(start), Expression.literal(count)));
-    }
+        default OrderAble asc(String field) {
+            return asc(Expression.path(field));
+        }
 
-    default SelectAble limit(int count) {
-      return limit(0, count);
+        default OrderAble desc(String field) {
+            return desc(Expression.path(field));
+        }
     }
-  }
 
-  class Limit {
-    public final Expression start;
-    public final Expression count;
+    class Order {
+        public final OrderMode mode;
+        public final Expression expression;
 
-    public Limit(Expression start, Expression count) {
-      this.start = start;
-      this.count = count;
+        public Order(OrderMode mode, Expression expression) {
+            this.mode = mode;
+            this.expression = expression;
+        }
     }
-  }
 
-  interface SelectAble extends DistinctAble {
-    List<Select> selects();
+    default Order orderOf(OrderMode mode, Expression expression) {
+        return new Order(mode, expression);
+    }
 
-    SelectAble select(Expression expr, String alias);
+    default Order ascOf(Expression expression) {
+        return orderOf(OrderMode.ASC, expression);
+    }
 
-    <T> SelectAble select(Iterable<T> values, Function<T, Select> func);
+    default Order descOf(Expression expression) {
+        return orderOf(OrderMode.DESC, expression);
+    }
 
-    SelectAble select(List<Expression> expressions);
+    interface LimitAble extends SelectAble {
+        SelectAble limit(Limit limit);
 
-    default SelectAble select(Expression... expressions) {
-      return select(Arrays.asList(expressions));
-    }
+        default SelectAble limit(int start, int count) {
+            return limit(new Limit(Expression.literal(start), Expression.literal(count)));
+        }
 
-    default SelectAble select(String... fields) {
-      List<Expression> expressions = Stream.of(fields)
-        .map(Expression::path)
-        .collect(Collectors.toList());
-      return select(expressions);
+        default SelectAble limit(int count) {
+            return limit(0, count);
+        }
     }
-  }
 
-  class Select {
-    public final Expression expr;
-    public final String alias;
+    class Limit {
+        public final Expression start;
+        public final Expression count;
 
-    public Select(Expression expr, String alias) {
-      this.expr = expr;
-      this.alias = alias;
+        public Limit(Expression start, Expression count) {
+            this.start = start;
+            this.count = count;
+        }
     }
-  }
 
-  default Select selectOf(Expression expr, String alias) {
-    return new Select(expr, alias);
-  }
+    interface SelectAble extends DistinctAble {
+        List<Select> selects();
 
-  default Select selectOf(Expression expr) {
-    return selectOf(expr, null);
-  }
+        SelectAble select(Expression expr, String alias);
 
-  interface DistinctAble extends QueryAble {
-    QueryAble distinct();
-  }
+        <T> SelectAble select(Iterable<T> values, Function<T, Select> func);
 
-  interface QueryAble extends TemplateBuilder {
-    TemplateBuilder count();
+        SelectAble select(List<Expression> expressions);
 
-    TemplateBuilder forUpdate();
-  }
+        default SelectAble select(Expression... expressions) {
+            return select(Arrays.asList(expressions));
+        }
 
-  interface ModifyAble extends GroupAble {
-    UpdateAble update();
+        default SelectAble select(String... fields) {
+            List<Expression> expressions = Stream.of(fields)
+                    .map(Expression::path)
+                    .collect(Collectors.toList());
+            return select(expressions);
+        }
+    }
 
-    TemplateBuilder delete(Iterable<String> tables);
+    class Select {
+        public final Expression expr;
+        public final String alias;
 
-    default TemplateBuilder delete(String... tables) {
-      return delete(Arrays.asList(tables));
+        public Select(Expression expr, String alias) {
+            this.expr = expr;
+            this.alias = alias;
+        }
     }
 
-    default TemplateBuilder delete() {
-      return delete(Collections.emptyList());
+    default Select selectOf(Expression expr, String alias) {
+        return new Select(expr, alias);
     }
-  }
 
-  interface UpdateAble extends TemplateBuilder {
-    UpdateAble ending();
+    default Select selectOf(Expression expr) {
+        return selectOf(expr, null);
+    }
 
-    UpdateAble set(String field, Expression value);
+    interface DistinctAble extends QueryAble {
+        QueryAble distinct();
+    }
 
-    <T> UpdateAble set(Iterable<T> values, Function<T, Tuple.Tuple2<String, Object>> func);
+    interface QueryAble extends TemplateBuilder {
+        TemplateBuilder count();
 
-    default UpdateAble set(String field, Object value) {
-      return set(field, Expression.literal(value));
+        TemplateBuilder forUpdate();
     }
-  }
 
-  ColumnSet createTable(String table);
+    interface ModifyAble extends GroupAble {
+        UpdateAble update();
 
-  interface ColumnSet extends PrimaryKeySet {
-    ColumnSet column(String name, JDBCType type, int length, int scale, boolean notNull, String defaultValue, String expression);
+        TemplateBuilder delete(Iterable<String> tables);
 
-    default ColumnSet column(String name, JDBCType type, int length, int scale, boolean notNull, String defaultValue) {
-      return column(name, type, length, scale, notNull, defaultValue, null);
-    }
+        default TemplateBuilder delete(String... tables) {
+            return delete(Arrays.asList(tables));
+        }
 
-    default ColumnSet column(String name, JDBCType type, int length, boolean notNull, String defaultValue) {
-      return column(name, type, length, 0, notNull, defaultValue);
+        default TemplateBuilder delete() {
+            return delete(Collections.emptyList());
+        }
     }
 
-    default ColumnSet column(String name, JDBCType type, boolean notNull, String defaultValue) {
-      return column(name, type, 0, notNull, defaultValue);
-    }
+    interface UpdateAble extends TemplateBuilder {
+        UpdateAble ending();
 
-    default ColumnSet column(String name, JDBCType type, int length, int scale, boolean notNull) {
-      return column(name, type, length, scale, notNull, null);
-    }
+        UpdateAble set(String field, Expression value);
 
-    default ColumnSet column(String name, JDBCType type, int length, boolean notNull) {
-      return column(name, type, length, 0, notNull, null);
-    }
+        <T> UpdateAble set(Iterable<T> values, Function<T, Tuple.Tuple2<String, Object>> func);
 
-    default ColumnSet column(String name, JDBCType type, int length, int scale, String defaultValue) {
-      return column(name, type, length, scale, true, defaultValue);
+        default UpdateAble set(String field, Object value) {
+            return set(field, Expression.literal(value));
+        }
     }
 
-    default ColumnSet column(String name, JDBCType type, int length, String defaultValue) {
-      return column(name, type, length, 0, true, defaultValue);
-    }
+    ColumnSet createTable(String table);
 
-    default ColumnSet column(String name, JDBCType type, int length, int scale) {
-      return column(name, type, length, scale, true, null);
-    }
+    interface ColumnSet extends PrimaryKeySet {
+        ColumnSet column(String name, JDBCType type, int length, int scale, boolean notNull, String defaultValue, String expression);
 
-    default ColumnSet column(String name, JDBCType type, int length) {
-      return column(name, type, length, 0, true, null);
-    }
+        default ColumnSet column(String name, JDBCType type, int length, int scale, boolean notNull, String defaultValue) {
+            return column(name, type, length, scale, notNull, defaultValue, null);
+        }
 
-    default ColumnSet column(String name, JDBCType type, boolean notNull) {
-      return column(name, type, notNull, null);
-    }
+        default ColumnSet column(String name, JDBCType type, int length, boolean notNull, String defaultValue) {
+            return column(name, type, length, 0, notNull, defaultValue);
+        }
 
-    default ColumnSet column(String name, JDBCType type) {
-      return column(name, type, true, null);
-    }
-  }
+        default ColumnSet column(String name, JDBCType type, boolean notNull, String defaultValue) {
+            return column(name, type, 0, notNull, defaultValue);
+        }
 
-  interface PrimaryKeySet extends IndexSet {
-    IndexSet primaryKey(Iterable<String> fields);
+        default ColumnSet column(String name, JDBCType type, int length, int scale, boolean notNull) {
+            return column(name, type, length, scale, notNull, null);
+        }
 
-    default IndexSet primaryKey(String... fields) {
-      return primaryKey(Arrays.asList(fields));
-    }
-  }
+        default ColumnSet column(String name, JDBCType type, int length, boolean notNull) {
+            return column(name, type, length, 0, notNull, null);
+        }
+
+        default ColumnSet column(String name, JDBCType type, int length, int scale, String defaultValue) {
+            return column(name, type, length, scale, true, defaultValue);
+        }
+
+        default ColumnSet column(String name, JDBCType type, int length, String defaultValue) {
+            return column(name, type, length, 0, true, defaultValue);
+        }
+
+        default ColumnSet column(String name, JDBCType type, int length, int scale) {
+            return column(name, type, length, scale, true, null);
+        }
+
+        default ColumnSet column(String name, JDBCType type, int length) {
+            return column(name, type, length, 0, true, null);
+        }
 
-  interface IndexSet extends TemplateBuilder {
-    IndexSet index(String name, Iterable<String> fields);
+        default ColumnSet column(String name, JDBCType type, boolean notNull) {
+            return column(name, type, notNull, null);
+        }
 
-    default IndexSet index(String name, String... fields) {
-      return index(name, Arrays.asList(fields));
+        default ColumnSet column(String name, JDBCType type) {
+            return column(name, type, true, null);
+        }
     }
 
-    default IndexSet index(String... fields) {
-      StringBuilder sb = new StringBuilder();
-      sb.append("idx");
-      for (String f : fields) {
-        sb.append("_").append(f);
-      }
-      return index(sb.toString(), fields);
+    interface PrimaryKeySet extends IndexSet {
+        IndexSet primaryKey(Iterable<String> fields);
+
+        default IndexSet primaryKey(String... fields) {
+            return primaryKey(Arrays.asList(fields));
+        }
     }
-  }
 
-  interface TemplateBuilder {
-    Template template();
+    interface IndexSet extends TemplateBuilder {
+        IndexSet index(String name, Iterable<String> fields);
 
-    Expression subQuery();
-  }
+        default IndexSet index(String name, String... fields) {
+            return index(name, Arrays.asList(fields));
+        }
 
-  interface Template {
-    /**
-     * 格式化的字面量SQL
-     */
-    default String pretty() {
-      return SqlFormatter.format(literalSQL());
+        default IndexSet index(String... fields) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("idx");
+            for (String f : fields) {
+                sb.append("_").append(f);
+            }
+            return index(sb.toString(), fields);
+        }
     }
 
-    /**
-     * 字面量SQL
-     */
-    String literalSQL();
+    interface TemplateBuilder {
+        Template template();
 
-    /**
-     * 带有占位符"?"的SQL
-     */
-    String placeholderSQL();
+        Expression subQuery();
+    }
 
-    /**
-     * 带有参数化的SQL
-     */
-    String parameterizedSQL();
+    interface Template {
+        /**
+         * 格式化的字面量SQL
+         */
+        default String pretty() {
+            return SqlFormatter.format(literalSQL());
+        }
 
-    /**
-     * 参数列表
-     */
-    List<Expression.Parameter> parameters();
+        /**
+         * 字面量SQL
+         */
+        String literalSQL();
 
-    default Map<String, Object> parametersAsMap() {
-      Map<String, Object> args = new LinkedHashMap<>();
-      parameters().forEach(v -> args.put(v.getName(), v.getValue()));
-      return args;
-    }
-  }
+        /**
+         * 带有占位符"?"的SQL
+         */
+        String placeholderSQL();
 
-  @Data
-  @Builder
-  class TemplateExpression implements Expression {
-    private Template template;
+        /**
+         * 带有参数化的SQL
+         */
+        String parameterizedSQL();
 
-    @Override
-    public int priority() {
-      return 20;
+        /**
+         * 参数列表
+         */
+        List<Expression.Parameter> parameters();
+
+        default Map<String, Object> parametersAsMap() {
+            Map<String, Object> args = new LinkedHashMap<>();
+            parameters().forEach(v -> args.put(v.getName(), v.getValue()));
+            return args;
+        }
     }
+
+    @Data
+    @Builder
+    class TemplateExpression implements Expression {
+        private Template template;
+
+        @Override
+        public int priority() {
+            return 20;
+        }
+
+        @Override
+        public <T> T visit(Visitor<T> visitor) {
+            if (visitor instanceof SqlBuilder.AbstractVisitor) {
+                return ((SqlBuilder.AbstractVisitor<T>) visitor).onTemplateExpression(this);
+            }
+            return null;
+        }
 
-    @Override
-    public <T> T visit(Visitor<T> visitor) {
-      if (visitor instanceof SqlBuilder.AbstractVisitor) {
-        return ((SqlBuilder.AbstractVisitor<T>) visitor).onTemplateExpression(this);
-      }
-      return null;
+        public static TemplateExpression of(SqlBuilder.Template template) {
+            return TemplateExpression.builder().template(template).build();
+        }
     }
 
-    public static TemplateExpression of(SqlBuilder.Template template) {
-      return TemplateExpression.builder().template(template).build();
+    abstract class AbstractVisitor<T> extends Expression.AbstractVisitor<T> {
+        public T onTemplateExpression(TemplateExpression expr) {
+            return null;
+        }
     }
-  }
 
-  abstract class AbstractVisitor<T> extends Expression.AbstractVisitor<T> {
-    public T onTemplateExpression(TemplateExpression expr) {
-      return null;
+    interface StatelessSqlBuilder extends SqlBuilder, JoinAble, UpdateAble, ColumnSet {
     }
-  }
 
-  interface StatelessSqlBuilder extends SqlBuilder, JoinAble, UpdateAble, ColumnSet {
-  }
+    interface Factory {
+        default SqlBuilder create() {
+            return createStatelessBuilder();
+        }
 
-  interface Factory {
-    default SqlBuilder create() {
-      return createStatelessBuilder();
+        StatelessSqlBuilder createStatelessBuilder();
     }
 
-    StatelessSqlBuilder createStatelessBuilder();
-  }
-
-  default Expression parse(String expr) {
-    ExpressionParser parser = ExpressionParser.newParser();
-    return parser.parse(expr);
-  }
+    default Expression parse(String expr) {
+        ExpressionParser parser = ExpressionParser.newParser();
+        return parser.parse(expr);
+    }
 
-  default Expression id(String name) {
-    return Expression.id(name);
-  }
+    default Expression id(String name) {
+        return Expression.id(name);
+    }
 
-  default Expression value(Object v) {
-    return Expression.literal(v);
-  }
+    default Expression value(Object v) {
+        return Expression.literal(v);
+    }
 
-  default Expression param() {
-    return Expression.Parameter.of("?", null);
-  }
+    default Expression param() {
+        return Expression.Parameter.of("?", null);
+    }
 
-  // sql function
-  default Expression field(String name) {
-    return Expression.path(name);
-  }
+    // sql function
+    default Expression field(String name) {
+        return Expression.path(name);
+    }
 
-  default Expression exists(Expression expr) {
-    return id("EXISTS").call(expr);
-  }
+    default Expression exists(Expression expr) {
+        return id("EXISTS").call(expr);
+    }
 
-  default Expression notExists(Expression expr) {
-    return id("NOT EXISTS").call(expr);
-  }
+    default Expression notExists(Expression expr) {
+        return id("NOT EXISTS").call(expr);
+    }
 
-  default Expression rowNumber() {
-    return id("ROW_NUMBER").call();
-  }
+    default Expression rowNumber() {
+        return id("ROW_NUMBER").call();
+    }
 
-  // case被占用，首字母大写
-  default Expression.CaseAble Case(Expression expression) {
-    return new Expression.CaseAbleImpl(expression);
-  }
+    // case被占用，首字母大写
+    default Expression.CaseAble Case(Expression expression) {
+        return new Expression.CaseAbleImpl(expression);
+    }
 
-  default Expression.CaseAble Case() {
-    return Case(Expression.EMPTY);
-  }
+    default Expression.CaseAble Case() {
+        return Case(Expression.EMPTY);
+    }
 
-  default Expression coalesce(Expression... expressions) {
-    return id("COALESCE").call(expressions);
-  }
+    default Expression coalesce(Expression... expressions) {
+        return id("COALESCE").call(expressions);
+    }
 
-  default Expression coalesce(Object... values) {
-    return id("COALESCE").call(values);
-  }
+    default Expression coalesce(Object... values) {
+        return id("COALESCE").call(values);
+    }
 }

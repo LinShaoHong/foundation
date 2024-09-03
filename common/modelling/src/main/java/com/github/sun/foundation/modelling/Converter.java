@@ -10,15 +10,15 @@ import java.lang.annotation.*;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Converter {
-  Class<? extends Handler> value();
+    Class<? extends Handler> value();
 
-  interface Handler<M, D> {
-    D serialize(M value);
+    interface Handler<M, D> {
+        D serialize(M value);
 
-    M deserialize(D value);
-  }
+        M deserialize(D value);
+    }
 
-  interface Parser {
-    Class<?> parse(Class<? extends Handler> handlerClass);
-  }
+    interface Parser {
+        Class<?> parse(Class<? extends Handler> handlerClass);
+    }
 }

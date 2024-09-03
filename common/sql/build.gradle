@@ -1,9 +1,9 @@
 dependencies {
-  api project(":$rootName-modelling")
-  api project(":$rootName-expression")
-  api "com.alibaba:druid:$vers.druid"
-  api "mysql:mysql-connector-java:$vers.mysql"
-  api "org.postgresql:postgresql:$vers.postgresql"
+    api project(":$rootName-modelling")
+    api project(":$rootName-expression")
+    api "com.alibaba:druid:$vers.druid"
+    api "mysql:mysql-connector-java:$vers.mysql"
+    api "org.postgresql:postgresql:$vers.postgresql"
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")

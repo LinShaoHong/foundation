@@ -1,20 +1,20 @@
 dependencies {
-  api project(":$rootName-test")
-  api "org.slf4j:slf4j-api:1.7.26"
+    api project(":$rootName-test")
+    api "org.slf4j:slf4j-api:1.7.26"
 
-  api "javax.annotation:javax.annotation-api:1.3.2"
-  api "javax.ws.rs:javax.ws.rs-api:$vers.jax_rs_api"
-  api "com.github.stuxuhai:jpinyin:$vers.jpinyin"
-  api "io.github.classgraph:classgraph:$vers.classgraph"
+    api "javax.annotation:javax.annotation-api:1.3.2"
+    api "javax.ws.rs:javax.ws.rs-api:$vers.jax_rs_api"
+    api "com.github.stuxuhai:jpinyin:$vers.jpinyin"
+    api "io.github.classgraph:classgraph:$vers.classgraph"
 
-  api "com.fasterxml.jackson.core:jackson-databind:$vers.jackson"
-  api "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$vers.jackson"
-  api "com.fasterxml.jackson.module:jackson-module-paranamer:$vers.jackson"
+    api "com.fasterxml.jackson.core:jackson-databind:$vers.jackson"
+    api "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$vers.jackson"
+    api "com.fasterxml.jackson.module:jackson-module-paranamer:$vers.jackson"
 
-  api "com.google.guava:guava:$vers.guava"
-  api 'com.github.ben-manes.caffeine:caffeine:3.1.8'
+    api "com.google.guava:guava:$vers.guava"
+    api 'com.github.ben-manes.caffeine:caffeine:3.1.8'
 
-  api 'org.apache.tomcat.embed:tomcat-embed-core:9.0.64'
+    api 'org.apache.tomcat.embed:tomcat-embed-core:9.0.64'
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")

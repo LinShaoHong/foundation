@@ -19,34 +19,34 @@ import java.util.stream.Collectors;
 @Slf4j
 @ApplicationPath("/api")
 public abstract class JerseyApplication extends ResourceConfig {
-  public JerseyApplication(ApplicationContext context) {
-    Class<?> appClass = (Class<?>) getClass().getGenericSuperclass();
-    Bootstrap bootstrap = Bootstrap.build(appClass, context);
-    bootstrap.startup();
-    Runtime.getRuntime().addShutdownHook(new Thread(bootstrap::shutdown));
-    List<Class<?>> providers = Scanner.getClassesWithAnnotation(Provider.class)
-      .stream()
-      .map(Scanner.ClassTag::runtimeClass)
-      .collect(Collectors.toList());
-    List<Class<?>> resources = Scanner.getClassesWithAnnotation(Path.class)
-      .stream()
-      .map(Scanner.ClassTag::runtimeClass)
-      .collect(Collectors.toList());
-    log.info("Register jersey with following providers:\n{}\nand following resources:\n{}\n",
-      Configurators.renderClasses(providers),
-      Configurators.renderClasses(resources));
-    HashSet<Class<?>> set = new HashSet<>();
-    set.addAll(providers);
-    set.addAll(resources);
-    // multipart
-    set.add(MultiPartFeature.class);
-    // sse
-    set.add(SseFeature.class);
-    registerClasses(set);
-    // inject context provider
-    Scanner.getClassesWithInterface(RequestScopeContextResolver.BinderProvider.class)
-      .stream()
-      .filter(Scanner.ClassTag::isImplementClass)
-      .forEach(provider -> register(provider.getInstance().binder()));
-  }
+    public JerseyApplication(ApplicationContext context) {
+        Class<?> appClass = (Class<?>) getClass().getGenericSuperclass();
+        Bootstrap bootstrap = Bootstrap.build(appClass, context);
+        bootstrap.startup();
+        Runtime.getRuntime().addShutdownHook(new Thread(bootstrap::shutdown));
+        List<Class<?>> providers = Scanner.getClassesWithAnnotation(Provider.class)
+                .stream()
+                .map(Scanner.ClassTag::runtimeClass)
+                .collect(Collectors.toList());
+        List<Class<?>> resources = Scanner.getClassesWithAnnotation(Path.class)
+                .stream()
+                .map(Scanner.ClassTag::runtimeClass)
+                .collect(Collectors.toList());
+        log.info("Register jersey with following providers:\n{}\nand following resources:\n{}\n",
+                Configurators.renderClasses(providers),
+                Configurators.renderClasses(resources));
+        HashSet<Class<?>> set = new HashSet<>();
+        set.addAll(providers);
+        set.addAll(resources);
+        // multipart
+        set.add(MultiPartFeature.class);
+        // sse
+        set.add(SseFeature.class);
+        registerClasses(set);
+        // inject context provider
+        Scanner.getClassesWithInterface(RequestScopeContextResolver.BinderProvider.class)
+                .stream()
+                .filter(Scanner.ClassTag::isImplementClass)
+                .forEach(provider -> register(provider.getInstance().binder()));
+    }
 }

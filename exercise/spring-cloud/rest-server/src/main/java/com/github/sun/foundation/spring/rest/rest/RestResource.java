@@ -15,17 +15,17 @@ import javax.ws.rs.core.MediaType;
 @Path("/v1/api")
 public class RestResource extends AbstractResource {
 
-  @Autowired
-  private EntityMapper mapper;
+    @Autowired
+    private EntityMapper mapper;
 
-  @GET
-  @Path("/test")
-  @Produces(MediaType.APPLICATION_JSON)
-  public SingleResponse<Entity> test() {
-    mapper.test();
-    SqlBuilder.Factory factory = SqlBuilderFactory.mysql();
-    SqlBuilder sb = factory.create();
-    Entity entity = mapper.findOneByTemplate(sb.from(Entity.class).where(sb.field("id").eq("a")).template());
-    return responseOf(entity);
-  }
+    @GET
+    @Path("/test")
+    @Produces(MediaType.APPLICATION_JSON)
+    public SingleResponse<Entity> test() {
+        mapper.test();
+        SqlBuilder.Factory factory = SqlBuilderFactory.mysql();
+        SqlBuilder sb = factory.create();
+        Entity entity = mapper.findOneByTemplate(sb.from(Entity.class).where(sb.field("id").eq("a")).template());
+        return responseOf(entity);
+    }
 }

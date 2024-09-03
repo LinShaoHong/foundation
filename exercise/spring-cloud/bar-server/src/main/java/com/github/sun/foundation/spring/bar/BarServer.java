@@ -9,11 +9,11 @@ import org.springframework.context.ApplicationContext;
 @EnableEurekaClient
 @SpringBootApplication
 public class BarServer extends JerseyApplication {
-  public BarServer(ApplicationContext context) {
-    super(context);
-  }
+    public BarServer(ApplicationContext context) {
+        super(context);
+    }
 
-  public static void main(String[] args) {
-    new SpringApplicationBuilder(BarServer.class).run(args);
-  }
+    public static void main(String[] args) {
+        new SpringApplicationBuilder(BarServer.class).run(args);
+    }
 }

@@ -11,67 +11,68 @@ import com.github.sun.foundation.sql.spi.SqlTemplate;
  * @Date: 2:40 PM 2019-03-04
  */
 public class SqlBuilderFactory {
-  public static class Provider implements InjectionProvider {
-    @Override
-    public void config(Binder binder) {
-      binder.named("mysql").bind(mysql());
-      binder.named("pg").bind(pg());
-    }
-  }
-
-  public static SqlBuilder.Factory mysql() {
-    return Mysql::new;
-  }
-
-  private static class Mysql extends BasicSqlBuilder {
-    @Override
-    protected String escapeName(String name) {
-      checkName(name);
-      return "`" + name + "`";
+    public static class Provider implements InjectionProvider {
+        @Override
+        public void config(Binder binder) {
+            binder.named("mysql").bind(mysql());
+            binder.named("pg").bind(pg());
+        }
     }
 
-    @Override
-    protected void buildSubJoinOnClause(SqlTemplate.Builder sb, Expression subQueryExpression) {
-      sb.append(" (");
-      sb.append(null, subQueryExpression);
-      sb.append(")");
+    public static SqlBuilder.Factory mysql() {
+        return Mysql::new;
     }
 
-    @Override
-    protected void buildJoinOnClause(SqlTemplate.Builder sb, Expression on) {
-      if (on != null) {
-        sb.append(" ON ");
-        on.visit(newVisitor(sb));
-      }
+    private static class Mysql extends BasicSqlBuilder {
+        @Override
+        protected String escapeName(String name) {
+            checkName(name);
+            return "`" + name + "`";
+        }
+
+        @Override
+        protected void buildSubJoinOnClause(SqlTemplate.Builder sb, Expression subQueryExpression) {
+            sb.append(" (");
+            sb.append(null, subQueryExpression);
+            sb.append(")");
+        }
+
+        @Override
+        protected void buildJoinOnClause(SqlTemplate.Builder sb, Expression on) {
+            if (on != null) {
+                sb.append(" ON ");
+                on.visit(newVisitor(sb));
+            }
+        }
+
+        @Override
+        protected void buildLimitClause(SqlTemplate.Builder sb, SqlBuilder.Limit limit) {
+            if (limit == null)
+                return;
+            Visitor visitor = newVisitor(sb);
+            sb.append(" LIMIT ");
+            limit.start.visit(visitor);
+            sb.append(", ");
+            limit.count.visit(visitor);
+        }
     }
 
-    @Override
-    protected void buildLimitClause(SqlTemplate.Builder sb, SqlBuilder.Limit limit) {
-      if (limit == null) return;
-      Visitor visitor = newVisitor(sb);
-      sb.append(" LIMIT ");
-      limit.start.visit(visitor);
-      sb.append(", ");
-      limit.count.visit(visitor);
-    }
-  }
-
-  public static SqlBuilder.Factory pg() {
-    return Postgres::new;
-  }
-
-  private static class Postgres extends BasicSqlBuilder {
-    @Override
-    protected String escapeName(String name) {
-      checkName(name);
-      return "\"" + name + "\"";
+    public static SqlBuilder.Factory pg() {
+        return Postgres::new;
     }
 
-    @Override
-    protected void buildForUpdateClause(SqlTemplate.Builder sb, boolean forUpdate) {
-      if (forUpdate) {
-        throw new UnsupportedOperationException("POSTGRES NOT SUPPORT FOR-UPDATE");
-      }
+    private static class Postgres extends BasicSqlBuilder {
+        @Override
+        protected String escapeName(String name) {
+            checkName(name);
+            return "\"" + name + "\"";
+        }
+
+        @Override
+        protected void buildForUpdateClause(SqlTemplate.Builder sb, boolean forUpdate) {
+            if (forUpdate) {
+                throw new UnsupportedOperationException("POSTGRES NOT SUPPORT FOR-UPDATE");
+            }
+        }
     }
-  }
 }

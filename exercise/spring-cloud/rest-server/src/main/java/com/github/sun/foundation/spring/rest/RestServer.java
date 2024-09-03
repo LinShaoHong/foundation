@@ -7,11 +7,11 @@ import org.springframework.context.ApplicationContext;
 
 @SpringBootApplication
 public class RestServer extends JerseyApplication {
-  public RestServer(ApplicationContext context) {
-    super(context);
-  }
+    public RestServer(ApplicationContext context) {
+        super(context);
+    }
 
-  public static void main(String[] args) {
-    new SpringApplicationBuilder(RestServer.class).run(args);
-  }
+    public static void main(String[] args) {
+        new SpringApplicationBuilder(RestServer.class).run(args);
+    }
 }

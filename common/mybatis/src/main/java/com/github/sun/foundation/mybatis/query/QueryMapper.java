@@ -14,98 +14,98 @@ import java.util.Map;
 import java.util.Set;
 
 public interface QueryMapper<T> {
-  @SelectProvider(type = Provider.class, method = "findAll")
-  List<T> findAll();
+    @SelectProvider(type = Provider.class, method = "findAll")
+    List<T> findAll();
 
-  @SelectProvider(type = Provider.class, method = "findById")
-  T findById(@Param("id") Serializable id);
+    @SelectProvider(type = Provider.class, method = "findById")
+    T findById(@Param("id") Serializable id);
 
-  @SelectProvider(type = Provider.class, method = "findByIds")
-  List<T> findByIds(@Param("ids") Set<? extends Serializable> ids);
+    @SelectProvider(type = Provider.class, method = "findByIds")
+    List<T> findByIds(@Param("ids") Set<? extends Serializable> ids);
 
-  @SelectProvider(type = Provider.class, method = "count")
-  int count();
+    @SelectProvider(type = Provider.class, method = "count")
+    int count();
 
-  @SelectProvider(type = Provider.class, method = "existTable")
-  int $existTable(@Param("table") String table);
+    @SelectProvider(type = Provider.class, method = "existTable")
+    int $existTable(@Param("table") String table);
 
-  default boolean existTable(String table) {
-    return $existTable(table) > 0;
-  }
-
-  class Provider {
-    public String findAll(Map<String, Object> params) {
-      Class<?> clazz = (Class<?>) params.get("$RESULT_TYPE");
-      SqlBuilder.Factory factory = factory(params);
-      SqlBuilder sb = factory.create();
-      SqlBuilder.Template template = sb.from(clazz).template();
-      return reset(params, template);
+    default boolean existTable(String table) {
+        return $existTable(table) > 0;
     }
 
-    public String findById(Map<String, Object> params) {
-      Class<?> clazz = (Class<?>) params.get("$RESULT_TYPE");
-      SqlBuilder.Factory factory = factory(params);
-      SqlBuilder sb = factory.create();
-      Object id = params.get("id");
-      SqlBuilder.Template template = sb.from(clazz).where(sb.field(id(clazz)).eq(id)).template();
-      return reset(params, template);
-    }
+    class Provider {
+        public String findAll(Map<String, Object> params) {
+            Class<?> clazz = (Class<?>) params.get("$RESULT_TYPE");
+            SqlBuilder.Factory factory = factory(params);
+            SqlBuilder sb = factory.create();
+            SqlBuilder.Template template = sb.from(clazz).template();
+            return reset(params, template);
+        }
 
-    @SuppressWarnings("unchecked")
-    public String findByIds(Map<String, Object> params) {
-      Class<?> clazz = (Class<?>) params.get("$RESULT_TYPE");
-      SqlBuilder.Factory factory = factory(params);
-      SqlBuilder sb = factory.create();
-      Set<Object> ids = (Set<Object>) params.get("ids");
-      if (ids.isEmpty()) {
-        throw new IllegalArgumentException("ids is empty");
-      }
-      SqlBuilder.Template template = sb.from(clazz).where(sb.field(id(clazz)).in(ids)).template();
-      return reset(params, template);
-    }
+        public String findById(Map<String, Object> params) {
+            Class<?> clazz = (Class<?>) params.get("$RESULT_TYPE");
+            SqlBuilder.Factory factory = factory(params);
+            SqlBuilder sb = factory.create();
+            Object id = params.get("id");
+            SqlBuilder.Template template = sb.from(clazz).where(sb.field(id(clazz)).eq(id)).template();
+            return reset(params, template);
+        }
 
-    public String count(Map<String, Object> params) {
-      Class<?> clazz = (Class<?>) params.get("$RESULT_TYPE");
-      SqlBuilder.Factory factory = factory(params);
-      SqlBuilder sb = factory.create();
-      SqlBuilder.Template template = sb.from(clazz).count().template();
-      return reset(params, template);
-    }
+        @SuppressWarnings("unchecked")
+        public String findByIds(Map<String, Object> params) {
+            Class<?> clazz = (Class<?>) params.get("$RESULT_TYPE");
+            SqlBuilder.Factory factory = factory(params);
+            SqlBuilder sb = factory.create();
+            Set<Object> ids = (Set<Object>) params.get("ids");
+            if (ids.isEmpty()) {
+                throw new IllegalArgumentException("ids is empty");
+            }
+            SqlBuilder.Template template = sb.from(clazz).where(sb.field(id(clazz)).in(ids)).template();
+            return reset(params, template);
+        }
 
-    public String existTable(Map<String, Object> params) {
-      String table = (String) params.get("table");
-      SqlSessionMeta meta = SqlSessionMeta.collector.values().iterator().next();
-      return "SELECT COUNT(0) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" + meta.database() + "' AND TABLE_NAME='" + table + "'";
-    }
+        public String count(Map<String, Object> params) {
+            Class<?> clazz = (Class<?>) params.get("$RESULT_TYPE");
+            SqlBuilder.Factory factory = factory(params);
+            SqlBuilder sb = factory.create();
+            SqlBuilder.Template template = sb.from(clazz).count().template();
+            return reset(params, template);
+        }
 
-    @SuppressWarnings("Duplicates")
-    private String id(Class<?> clazz) {
-      Model model = Model.from(clazz);
-      List<Model.Property> pks = model.primaryProperties();
-      if (pks.isEmpty()) {
-        throw new IllegalArgumentException(model.name() + " missing primary keys");
-      }
-      return pks.get(0).name();
-    }
+        public String existTable(Map<String, Object> params) {
+            String table = (String) params.get("table");
+            SqlSessionMeta meta = SqlSessionMeta.collector.values().iterator().next();
+            return "SELECT COUNT(0) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" + meta.database() + "' AND TABLE_NAME='" + table + "'";
+        }
 
-    @SuppressWarnings("Duplicates")
-    private SqlBuilder.Factory factory(Map<String, Object> params) {
-      DBType dbType = DBType.valueOf(params.get("$DBType").toString());
-      switch (dbType) {
-        case PG:
-          return SqlBuilderFactory.pg();
-        case MYSQL:
-          return SqlBuilderFactory.mysql();
-        default:
-          throw new IllegalArgumentException("Unknown db type: '" + DBType.get() + "'");
-      }
-    }
+        @SuppressWarnings("Duplicates")
+        private String id(Class<?> clazz) {
+            Model model = Model.from(clazz);
+            List<Model.Property> pks = model.primaryProperties();
+            if (pks.isEmpty()) {
+                throw new IllegalArgumentException(model.name() + " missing primary keys");
+            }
+            return pks.get(0).name();
+        }
 
-    @SuppressWarnings("Duplicates")
-    private String reset(Map<String, Object> params, SqlBuilder.Template template) {
-      params.clear();
-      params.putAll(template.parametersAsMap());
-      return template.parameterizedSQL();
+        @SuppressWarnings("Duplicates")
+        private SqlBuilder.Factory factory(Map<String, Object> params) {
+            DBType dbType = DBType.valueOf(params.get("$DBType").toString());
+            switch (dbType) {
+                case PG:
+                    return SqlBuilderFactory.pg();
+                case MYSQL:
+                    return SqlBuilderFactory.mysql();
+                default:
+                    throw new IllegalArgumentException("Unknown db type: '" + DBType.get() + "'");
+            }
+        }
+
+        @SuppressWarnings("Duplicates")
+        private String reset(Map<String, Object> params, SqlBuilder.Template template) {
+            params.clear();
+            params.putAll(template.parametersAsMap());
+            return template.parameterizedSQL();
+        }
     }
-  }
 }

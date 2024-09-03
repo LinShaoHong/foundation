@@ -19,54 +19,54 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class QwenAssistant implements Assistant {
-  private final Generation gen;
+    private final Generation gen;
 
-  public QwenAssistant() {
-    PooledDashScopeObjectFactory pooledDashScopeObjectFactory =
-      new PooledDashScopeObjectFactory();
-    GenericObjectPoolConfig<Generation> config = new GenericObjectPoolConfig<>();
-    config.setMaxTotal(32);
-    config.setMinIdle(32);
-    try (GenericObjectPool<Generation> generationPool =
-      new GenericObjectPool<>(pooledDashScopeObjectFactory, config);) {
-      this.gen = generationPool.borrowObject();
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  @Override
-  public String chat(String apiKey, String model, List<String> q) {
-    Constants.apiKey = apiKey;
-    List<Message> messages = q.stream().map(v -> Message.builder()
-      .role(Role.USER.getValue())
-      .content(v)
-      .build()).collect(Collectors.toList());
-    GenerationParam param = GenerationParam.builder().model(model)
-      .messages(messages)
-      .resultFormat(GenerationParam.ResultFormat.MESSAGE).topP(0.8).enableSearch(true)
-      .build();
-    try {
-      GenerationResult result = gen.call(param);
-      List<String> resp = result.getOutput().getChoices().stream()
-        .map(v -> v.getMessage().getContent())
-        .collect(Collectors.toList());
-      return resp.isEmpty() ? null : resp.get(0);
-    } catch (NoApiKeyException | InputRequiredException ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  public static class PooledDashScopeObjectFactory extends BasePooledObjectFactory<Generation> {
-    @Override
-    public Generation create() {
-      return new Generation();
+    public QwenAssistant() {
+        PooledDashScopeObjectFactory pooledDashScopeObjectFactory =
+                new PooledDashScopeObjectFactory();
+        GenericObjectPoolConfig<Generation> config = new GenericObjectPoolConfig<>();
+        config.setMaxTotal(32);
+        config.setMinIdle(32);
+        try (GenericObjectPool<Generation> generationPool =
+                     new GenericObjectPool<>(pooledDashScopeObjectFactory, config);) {
+            this.gen = generationPool.borrowObject();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
-    public PooledObject<Generation> wrap(Generation obj) {
-      return new DefaultPooledObject<>(obj);
+    public String chat(String apiKey, String model, List<String> q) {
+        Constants.apiKey = apiKey;
+        List<Message> messages = q.stream().map(v -> Message.builder()
+                .role(Role.USER.getValue())
+                .content(v)
+                .build()).collect(Collectors.toList());
+        GenerationParam param = GenerationParam.builder().model(model)
+                .messages(messages)
+                .resultFormat(GenerationParam.ResultFormat.MESSAGE).topP(0.8).enableSearch(true)
+                .build();
+        try {
+            GenerationResult result = gen.call(param);
+            List<String> resp = result.getOutput().getChoices().stream()
+                    .map(v -> v.getMessage().getContent())
+                    .collect(Collectors.toList());
+            return resp.isEmpty() ? null : resp.get(0);
+        } catch (NoApiKeyException | InputRequiredException ex) {
+            throw new RuntimeException(ex);
+        }
     }
-  }
+
+    public static class PooledDashScopeObjectFactory extends BasePooledObjectFactory<Generation> {
+        @Override
+        public Generation create() {
+            return new Generation();
+        }
+
+        @Override
+        public PooledObject<Generation> wrap(Generation obj) {
+            return new DefaultPooledObject<>(obj);
+        }
+    }
 }
 

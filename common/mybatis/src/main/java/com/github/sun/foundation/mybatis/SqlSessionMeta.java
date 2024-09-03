@@ -7,44 +7,44 @@ import java.util.HashMap;
 import java.util.Map;
 
 public interface SqlSessionMeta {
-  String database();
+    String database();
 
-  String basePackage();
+    String basePackage();
 
-  String configLocation();
+    String configLocation();
 
-  DataSource dataSource();
+    DataSource dataSource();
 
-  SqlSessionFactory sqlSessionFactory();
+    SqlSessionFactory sqlSessionFactory();
 
-  static SqlSessionMeta build(String configLocation, String database, String basePackage, DataSource dataSource, SqlSessionFactory sqlSessionFactory) {
-    return new SqlSessionMeta() {
-      @Override
-      public String database() {
-        return database;
-      }
+    static SqlSessionMeta build(String configLocation, String database, String basePackage, DataSource dataSource, SqlSessionFactory sqlSessionFactory) {
+        return new SqlSessionMeta() {
+            @Override
+            public String database() {
+                return database;
+            }
 
-      @Override
-      public String basePackage() {
-        return basePackage;
-      }
+            @Override
+            public String basePackage() {
+                return basePackage;
+            }
 
-      @Override
-      public String configLocation() {
-        return configLocation;
-      }
+            @Override
+            public String configLocation() {
+                return configLocation;
+            }
 
-      @Override
-      public DataSource dataSource() {
-        return dataSource;
-      }
+            @Override
+            public DataSource dataSource() {
+                return dataSource;
+            }
 
-      @Override
-      public SqlSessionFactory sqlSessionFactory() {
-        return sqlSessionFactory;
-      }
-    };
-  }
+            @Override
+            public SqlSessionFactory sqlSessionFactory() {
+                return sqlSessionFactory;
+            }
+        };
+    }
 
-  Map<String, SqlSessionMeta> collector = new HashMap<>();
+    Map<String, SqlSessionMeta> collector = new HashMap<>();
 }
