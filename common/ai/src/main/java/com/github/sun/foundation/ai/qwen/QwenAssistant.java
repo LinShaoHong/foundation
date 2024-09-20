@@ -5,8 +5,6 @@ import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
-import com.alibaba.dashscope.exception.InputRequiredException;
-import com.alibaba.dashscope.exception.NoApiKeyException;
 import com.alibaba.dashscope.utils.Constants;
 import com.github.sun.foundation.ai.Assistant;
 import org.apache.commons.pool2.BasePooledObjectFactory;
@@ -44,7 +42,7 @@ public class QwenAssistant implements Assistant {
                 .build()).collect(Collectors.toList());
         GenerationParam param = GenerationParam.builder().model(model)
                 .messages(messages)
-                .resultFormat(GenerationParam.ResultFormat.MESSAGE).topP(0.8).enableSearch(true)
+                .resultFormat(GenerationParam.ResultFormat.MESSAGE).topP(0.8).enableSearch(false)
                 .build();
         try {
             GenerationResult result = gen.call(param);
@@ -52,7 +50,7 @@ public class QwenAssistant implements Assistant {
                     .map(v -> v.getMessage().getContent())
                     .collect(Collectors.toList());
             return resp.isEmpty() ? null : resp.get(0);
-        } catch (NoApiKeyException | InputRequiredException ex) {
+        } catch (Throwable ex) {
             throw new RuntimeException(ex);
         }
     }
