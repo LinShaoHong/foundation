@@ -5,6 +5,8 @@ dependencies {
     implementation 'com.alibaba.nls:nls-sdk-tts:2.2.15'
     implementation 'com.alibaba.nls:nls-sdk-common:2.2.15'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
+
+    implementation 'com.volcengine:volcengine-java-sdk-ark-runtime:0.1.130'
 }
 
 apply from: rootProject.file("buildscript/gradle/sub_maven.gradle")

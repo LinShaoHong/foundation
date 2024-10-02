@@ -13,10 +13,11 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class QwenAssistant implements Assistant {
+public class QwenAssistant extends Assistant.Basic {
     private final Generation gen;
 
     public QwenAssistant() {
@@ -34,12 +35,24 @@ public class QwenAssistant implements Assistant {
     }
 
     @Override
-    public String chat(String apiKey, String model, List<String> q) {
+    public String fetch() {
         Constants.apiKey = apiKey;
-        List<Message> messages = q.stream().map(v -> Message.builder()
-                .role(Role.USER.getValue())
-                .content(v)
-                .build()).collect(Collectors.toList());
+        List<Message> messages = new ArrayList<>();
+
+        systemMessages.forEach(m -> {
+            messages.add(Message.builder()
+                    .role(Role.SYSTEM.getValue())
+                    .content(m)
+                    .build());
+        });
+
+        userMessages.forEach(m -> {
+            messages.add(Message.builder()
+                    .role(Role.USER.getValue())
+                    .content(m)
+                    .build());
+        });
+
         GenerationParam param = GenerationParam.builder().model(model)
                 .messages(messages)
                 .resultFormat(GenerationParam.ResultFormat.MESSAGE).topP(0.8).enableSearch(false)
