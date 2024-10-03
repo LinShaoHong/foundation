@@ -33,6 +33,10 @@ public class Injector {
         return inner.getBean(name);
     }
 
+    public static <T> T getInstance(String name, Class<T> clazz) {
+        return inner.getBean(name, clazz);
+    }
+
     public static List<Object> annotationOf(Class<? extends Annotation> annotationClass) {
         return new ArrayList<>(inner.getBeansWithAnnotation(annotationClass).values());
     }
